@@ -1,0 +1,83 @@
+---
+title: The interview
+description: Every question Flutter Kickstart asks, the flag it maps to, its default, and what each choice changes in the generated Flutter app.
+---
+
+# The interview
+
+The interview is the whole input. Each answer maps to one generator flag, so
+you can also skip the questions and pass flags (see
+[Generator flags](/reference/flags)).
+
+Agents ask one question at a time, skip questions an earlier answer makes
+pointless, and read everything back before generating.
+
+## The questions
+
+| # | Question | Flag | Default |
+| - | --- | --- | --- |
+| 1 | App display name and description | `--app-name`, `--description` | from `--name` |
+| 2 | Package name | `--name` | snake_case of the display name |
+| 3 | Organization / reverse domain | `--org` | required |
+| 4 | Platforms | `--platforms` | `android,ios` |
+| 5 | State management: Bloc or Riverpod | `--state bloc\|riverpod` | none, always asked |
+| 6 | Network client: viva_network_kit or plain Dio | `--network viva\|dio` | `viva`, always asked |
+| 7 | API base URL per flavor | `--base-url flavor=url` (repeat) | `https://<flavor>.api.example.com` |
+| 8 | Starter features beyond home | `--features auth,orders` | none |
+| 9 | Languages besides English | `--locales en,bn` | `en` |
+| 10 | Crash reporting: none, Sentry or Crashlytics | `--crash` | `none` |
+| 11 | CI/CD: GitHub Actions + Fastlane, or none | `--ci github\|none` | `github` |
+| 12 | Minimum test coverage, in percent | `--coverage-floor` | `80` |
+| 13 | Figma file link | `--figma-url` | none |
+| 14 | AI tools the team uses | `--agents` | `all` |
+
+## What the choices change
+
+### State management
+
+**Bloc** gives you Cubits with `get_it` + `injectable` for dependency
+injection. **Riverpod** gives you `riverpod_generator` controllers and a
+provider graph. Both are asked every time, because the right one depends on
+the team and the client. See [State management](/app/state-management).
+
+### Network client
+
+Feature code only ever depends on the `AppApiClient` contract. This choice
+swaps one class in `lib/core/network/`:
+
+- **viva** uses `viva_network_kit` (`VivaApiClient`). It also checks connectivity before each call.
+- **dio** uses plain Dio (`DioApiClient`) and doesn't add the package at all.
+
+Both share `dio_factory.dart`, `AppFailureConverter` and the same
+`JsonSerializer` API, so features, repositories and the feature generator are
+identical either way. See [Networking and errors](/app/networking).
+
+### Languages
+
+Each extra locale gets `lib/l10n/arb/app_<locale>.arb`, filled with the
+English strings until someone translates them. The iOS locale list is updated
+too. New features add their strings to every ARB file.
+
+### Crash reporting
+
+`none` logs to the console through `ConsoleCrashReporter`. `sentry` and
+`crashlytics` add the SDK, an adapter behind the `CrashReporter` contract, and
+raise Android `minSdk` if the SDK needs it.
+
+### CI/CD
+
+`github` generates the workflows, Fastlane and `docs/deployment-setup.md`.
+`none` generates no workflows (Very Good CLI's own are removed too) and leaves
+the deployment skill out of the AI layer. `scripts/quality_gate.sh` is
+always generated. See [CI/CD and releases](/app/ci-cd).
+
+### Coverage floor
+
+CI enforces it on every pull request. The generator also fails if a freshly
+generated app falls below it, so you start above the bar.
+
+### Flavors
+
+`development`, `staging` and `production` are fully wired, including native
+Android and iOS setup. Custom flavors (`--flavors`) only get Dart entrypoints,
+and the generator warns about the native parts left to do.
