@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Scripts and manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+
+      - name: Compile Python
+        run: python -m py_compile bin/flutter-kickstart skills/flutter-kickstart/scripts/*.py
+
+      - name: Check shell installer syntax
+        run: bash -n install.sh
+
+      - name: Validate plugin manifests
+        run: |
+          python - <<'PY'
+          import json, re, sys
+          plugin = json.load(open(".claude-plugin/plugin.json"))
+          json.load(open(".claude-plugin/marketplace.json"))
+          version = plugin.get("version", "")
+          if not re.fullmatch(r"\d+\.\d+\.\d+", version):
+              sys.exit(f"plugin.json version '{version}' is not x.y.z")
+          print(f"plugin.json version {version}")
+          PY
+
+      - name: Smoke-test the CLI and generator
+        run: |
+          python bin/flutter-kickstart --help
+          for state in bloc riverpod; do
+            for network in viva dio; do
+              python skills/flutter-kickstart/scripts/scaffold.py --dry-run \
+                --name demo_${state}_${network} --org com.acme --state $state --network $network \
+                --features orders --locales en,bn --crash sentry --ci github
+            done
+          done
+
+  docs:
+    name: Docs build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check for the docs site
+        id: site
+        working-directory: .
+        run: echo "exists=$([ -f website/package.json ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v7
+        if: steps.site.outputs.exists == 'true'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+      - if: steps.site.outputs.exists == 'true'
+        run: npm ci
+      - if: steps.site.outputs.exists == 'true'
+        run: npm run build
