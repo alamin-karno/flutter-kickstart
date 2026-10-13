@@ -1,13 +1,13 @@
 <p align="center">
   <a href="https://alamin-karno.github.io/flutter-kickstart/">
-    <img src=".github/assets/banner.jpg" alt="Flutter Kickstart: production-ready Flutter apps from one short interview" width="100%">
+    <img src=".github/assets/banner.jpg" alt="Flutter Kickstart: production-ready Flutter apps from a few quick questions" width="100%">
   </a>
 </p>
 
 <h1 align="center">Flutter Kickstart</h1>
 
 <p align="center">
-  <b>Create a production-ready Flutter app from one short interview.</b><br>
+  <b>Create a production-ready Flutter app from a few quick questions.</b><br>
   Flavors, clean architecture, Bloc or Riverpod, networking, tests, CI/CD and AI-agent rules,<br>
   already passing <code>flutter analyze</code> and <code>flutter test</code>.
 </p>
@@ -67,7 +67,7 @@ Or skip the CLI and ask your agent:
 ## Why Flutter Kickstart?
 
 - **Checks its own work.** It only reports success after `flutter analyze` and `flutter test` pass, and the coverage floor is met.
-- **Same answers, same app.** The interview drives a deterministic generator, so every teammate and every agent gets the same project.
+- **Same answers, same app.** Your answers drive a deterministic generator, so every teammate and every agent gets the same project.
 - **Asks instead of guessing.** Bloc or Riverpod, viva_network_kit or plain Dio: you choose each time.
 - **Keeps AI agents on track.** Every app ships `AGENTS.md` and project skills, so your agent follows the same rules after day one.
 - **No lock-in.** The output is a normal Flutter project. Even the feature generator is copied into the app.
@@ -107,7 +107,9 @@ Version Manager). `flutter-kickstart` works too.
 | `fks update` | Gets the latest release |
 | `fks uninstall` | Removes the command and the agent skills |
 
-## The interview
+## Setup questions
+
+Most have a default; press Enter to accept it, or pass the flag to skip the question.
 
 | # | Question | Flag | Default |
 | - | --- | --- | --- |
@@ -127,7 +129,7 @@ Version Manager). `flutter-kickstart` works too.
 | 14 | AI tools the team uses | `--agents` | `all` |
 
 What each choice changes is explained in
-[the interview guide](https://alamin-karno.github.io/flutter-kickstart/guide/interview).
+[the setup questions guide](https://alamin-karno.github.io/flutter-kickstart/guide/setup-questions).
 
 ## Other ways to install
 
