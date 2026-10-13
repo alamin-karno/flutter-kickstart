@@ -1,12 +1,43 @@
-# Flutter Kickstart
+<p align="center">
+  <a href="https://alamin-karno.github.io/flutter-kickstart/">
+    <img src=".github/assets/banner.jpg" alt="Flutter Kickstart: production-ready Flutter apps from one short interview" width="100%">
+  </a>
+</p>
 
-Turns "start a new Flutter app" into one short interview and a verified,
-production-ready codebase. Works with **Claude Code, Cursor, Windsurf,
-Antigravity, Codex, Gemini CLI and GitHub Copilot**.
+<h1 align="center">Flutter Kickstart</h1>
 
-The interview drives a deterministic generator (`scripts/scaffold.py`), so
-every agent produces the same project. The result has to pass
-`flutter analyze` and `flutter test` before the run reports success.
+<p align="center">
+  <b>Create a production-ready Flutter app from one short interview.</b><br>
+  Flavors, clean architecture, Bloc or Riverpod, networking, tests, CI/CD and AI-agent rules,<br>
+  already passing <code>flutter analyze</code> and <code>flutter test</code>.
+</p>
+
+<p align="center">
+  <a href="https://github.com/alamin-karno/flutter-kickstart/releases/latest"><img src="https://img.shields.io/github/v/release/alamin-karno/flutter-kickstart?style=flat-square&color=0468D7" alt="Latest release"></a>
+  <a href="https://github.com/alamin-karno/flutter-kickstart/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/alamin-karno/flutter-kickstart/ci.yml?branch=dev&style=flat-square&label=CI" alt="CI status"></a>
+  <a href="https://alamin-karno.github.io/flutter-kickstart/"><img src="https://img.shields.io/badge/docs-website-13B9FD?style=flat-square" alt="Documentation"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/alamin-karno/flutter-kickstart?style=flat-square" alt="MIT license"></a>
+  <a href="https://github.com/alamin-karno/flutter-kickstart/stargazers"><img src="https://img.shields.io/github/stars/alamin-karno/flutter-kickstart?style=flat-square" alt="GitHub stars"></a>
+</p>
+
+<p align="center">
+  <a href="https://alamin-karno.github.io/flutter-kickstart/"><b>Documentation</b></a> ·
+  <a href="https://alamin-karno.github.io/flutter-kickstart/guide/quick-start">Quick start</a> ·
+  <a href="https://alamin-karno.github.io/flutter-kickstart/app/overview">What you get</a> ·
+  <a href="CONTRIBUTING.md">Contributing</a> ·
+  <a href="CHANGELOG.md">Changelog</a>
+</p>
+
+---
+
+Every new Flutter project starts the same way: flavors, architecture,
+dependency injection, a network layer, routing, theming, localization, tests
+and CI. That takes days, and every project ends up a little different.
+
+**Flutter Kickstart does it in minutes, the same way every time.** Answer a
+few questions in your terminal, or ask your AI agent in plain words, and get a
+Flutter app that is ready for real work. It works with **Claude Code, Cursor,
+Windsurf, Antigravity, Codex, Gemini CLI and GitHub Copilot**.
 
 ## Quick start
 
@@ -14,51 +45,69 @@ every agent produces the same project. The result has to pass
 # 1. Install (once)
 curl -fsSL https://raw.githubusercontent.com/alamin-karno/flutter-kickstart/main/install.sh | bash
 
-# 2. Create an app (answer a few questions; Enter accepts the default)
+# 2. Create an app (answer a few questions; press Enter for the default)
 fks create
 
 # 3. Run it
 cd my_app && fks run
 ```
 
-Windows (PowerShell): `irm https://raw.githubusercontent.com/alamin-karno/flutter-kickstart/main/install.ps1 | iex`
+On Windows (PowerShell):
 
-`fks` is short for **f**lutter **k**ick**s**tart, the way `fvm` is short for
-Flutter Version Manager. `flutter-kickstart` works too.
+```powershell
+irm https://raw.githubusercontent.com/alamin-karno/flutter-kickstart/main/install.ps1 | iex
+```
 
-| Command | What it does |
-| --- | --- |
-| `fks create` | Asks the interview questions, generates the app, checks it with `flutter analyze` + `flutter test` |
-| `fks create --yes` | Asks only name, org and state management; uses defaults for everything else |
-| `fks create --name x --org com.acme --state bloc ...` | No questions; takes the same flags as `scaffold.py` |
-| `fks run [flavor]` | `flutter run --flavor <flavor> -t lib/main_<flavor>.dart` (default `development`, uses fvm if pinned) |
-| `fks add-feature orders` | Adds a feature with all layers, DI, route, l10n and tests to the app in `.` |
-| `fks doctor` | Checks Python, Flutter, git and Very Good CLI |
-| `fks update` | Pulls the latest templates and skills |
-| `fks uninstall` | Removes the command and the agent skills |
+Or skip the CLI and ask your agent:
+*"Create a new Flutter app called Acme Wallet for com.acme."*
 
-The installer also puts the skills in every AI agent's global folder, so you can
-skip the CLI and just ask your agent: *"Create a new Flutter app called Acme
-Wallet for com.acme."*
+> **Needs:** Flutter (or [fvm](https://fvm.app)), Python 3.8+, git. For iOS: macOS and Xcode.
+> [Very Good CLI](https://cli.vgv.dev) is installed for you on first use.
+
+## Why Flutter Kickstart?
+
+- **Checks its own work.** It only reports success after `flutter analyze` and `flutter test` pass, and the coverage floor is met.
+- **Same answers, same app.** The interview drives a deterministic generator, so every teammate and every agent gets the same project.
+- **Asks instead of guessing.** Bloc or Riverpod, viva_network_kit or plain Dio: you choose each time.
+- **Keeps AI agents on track.** Every app ships `AGENTS.md` and project skills, so your agent follows the same rules after day one.
+- **No lock-in.** The output is a normal Flutter project. Even the feature generator is copied into the app.
 
 ## What you get
 
 | Area | Generated |
 | --- | --- |
-| Base | Very Good CLI app: native dev/staging/prod flavors, very_good_analysis, l10n in English plus any extra locales you pick |
-| Architecture | `lib/core/` contracts + `lib/features/<name>/{domain,data,presentation}` |
-| State | **Bloc/Cubit** (get_it + injectable) or **Riverpod** (riverpod_generator), asked every time |
-| Network | `AppApiClient` contract backed by **viva_network_kit** (`VivaApiClient`) or **plain Dio** (`DioApiClient`), asked every time; sealed `AppFailure`, `Either` everywhere, auth + logging interceptors |
-| Shell | go_router (`AppRoutes`), Material 3 light/dark theme + `AppColors`/`AppSpacing`/`AppRadius`, `AppLogger`, `CrashReporter` (console, Sentry or Crashlytics), per-flavor `AppConfig` with `--dart-define` overrides |
-| Features | `home` + any starter features, each with all layers, DI, route, l10n and tests |
-| Tests | Unit, DI, bloc/controller and widget tests (~95% line coverage), `AppApiClient` contract tests that run against either client, `scripts/quality_gate.sh` |
-| CI/CD | Optional (`--ci github\|none`): GitHub Actions `pr_checks` (coverage gate), `android` (sign, Firebase App Distribution, Play internal), `ios` (Fastlane, TestFlight/App Store), symbol upload, `docs/deployment-setup.md` |
-| AI layer | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, 10 project skills, Cursor + Windsurf rules, Copilot instructions, Claude reviewer subagents, and `tool/kickstart/add_feature.py` so the app can grow without the plugin |
+| **Base** | Very Good CLI app with native development/staging/production flavors, `very_good_analysis` lints, l10n in English plus any extra languages |
+| **Architecture** | `lib/core/` contracts + `lib/features/<name>/{domain,data,presentation}` |
+| **State** | Bloc/Cubit (`get_it` + `injectable`) or Riverpod (`riverpod_generator`) |
+| **Network** | `AppApiClient` on viva_network_kit or plain Dio, sealed `AppFailure`, `Either` everywhere, auth and logging interceptors |
+| **App shell** | `go_router`, Material 3 light/dark theme with tokens, `AppLogger`, `CrashReporter` (console, Sentry or Crashlytics), per-flavor config |
+| **Tests** | Unit, DI, state and widget tests (about 95% coverage) and `scripts/quality_gate.sh` |
+| **CI/CD** | Optional GitHub Actions for PR checks, Android and iOS builds and store uploads, plus Fastlane and a setup guide |
+| **AI layer** | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, 10 project skills, Cursor and Windsurf rules, Copilot instructions, reviewer subagents |
+
+Read more: [Architecture](https://alamin-karno.github.io/flutter-kickstart/app/architecture) ·
+[Networking](https://alamin-karno.github.io/flutter-kickstart/app/networking) ·
+[Testing](https://alamin-karno.github.io/flutter-kickstart/app/testing) ·
+[CI/CD](https://alamin-karno.github.io/flutter-kickstart/app/ci-cd) ·
+[AI layer](https://alamin-karno.github.io/flutter-kickstart/app/ai-layer)
+
+## The `fks` command
+
+`fks` is short for **f**lutter **k**ick**s**tart (like `fvm` for Flutter
+Version Manager). `flutter-kickstart` works too.
+
+| Command | What it does |
+| --- | --- |
+| `fks create` | Asks the questions, generates the app, checks it with `flutter analyze` + `flutter test` |
+| `fks create --yes` | Asks only name, org and state management; uses defaults for the rest |
+| `fks create --name x --org com.acme --state bloc ...` | No questions; [takes generator flags](https://alamin-karno.github.io/flutter-kickstart/reference/flags) |
+| `fks run [flavor]` | Runs a flavor (default `development`); uses fvm if pinned |
+| `fks add-feature orders` | Adds a feature with every layer, DI, route, l10n and tests |
+| `fks doctor` | Checks Python, Flutter, git and Very Good CLI |
+| `fks update` | Gets the latest release |
+| `fks uninstall` | Removes the command and the agent skills |
 
 ## The interview
-
-The skill asks these one at a time, then reads the answers back before
-generating. Each answer maps to a `scaffold.py` flag.
 
 | # | Question | Flag | Default |
 | - | --- | --- | --- |
@@ -66,177 +115,66 @@ generating. Each answer maps to a `scaffold.py` flag.
 | 2 | Package name | `--name` | snake_case of the display name |
 | 3 | Organization / reverse domain | `--org` | required |
 | 4 | Platforms | `--platforms` | `android,ios` |
-| 5 | State management: Bloc or Riverpod | `--state bloc\|riverpod` | none, always asked |
-| 6 | Network client: viva_network_kit or plain Dio | `--network viva\|dio` | `viva`, always asked |
-| 7 | API base URL per flavor | `--base-url flavor=url` (repeat) | `https://<flavor>.api.example.com` |
+| 5 | State management | `--state bloc\|riverpod` | always asked |
+| 6 | Network client | `--network viva\|dio` | `viva`, always asked |
+| 7 | API base URL per flavor | `--base-url flavor=url` | placeholders |
 | 8 | Starter features beyond home | `--features auth,orders` | none |
 | 9 | Languages besides English | `--locales en,bn` | `en` |
-| 10 | Crash reporting: none, Sentry or Crashlytics | `--crash` | `none` |
-| 11 | CI/CD: GitHub Actions + Fastlane, or none | `--ci github\|none` | `github` |
-| 12 | Minimum test coverage, in percent | `--coverage-floor` | `80` |
+| 10 | Crash reporting | `--crash none\|sentry\|crashlytics` | `none` |
+| 11 | CI/CD | `--ci github\|none` | `github` |
+| 12 | Minimum test coverage (%) | `--coverage-floor` | `80` |
 | 13 | Figma file link | `--figma-url` | none |
 | 14 | AI tools the team uses | `--agents` | `all` |
 
-What the choices change:
+What each choice changes is explained in
+[the interview guide](https://alamin-karno.github.io/flutter-kickstart/guide/interview).
 
-- **Network.** Feature code only depends on the `AppApiClient` contract, so
-  this swaps one class in `lib/core/network/`. Both clients share
-  `dio_factory.dart`, `AppFailureConverter` and the `JsonSerializer` API
-  (`serializer.addParser<XModel>(XModel.fromJson)`), so features,
-  repositories and `add_feature.py` are identical either way.
-  viva_network_kit also checks connectivity before each call; plain Dio
-  doesn't add the package at all.
-- **Locales.** Each extra locale gets `lib/l10n/arb/app_<locale>.arb`,
-  seeded with the English strings until it's translated, and the iOS
-  locale list is updated. `add_feature.py` adds new strings to every ARB.
-- **CI/CD.** `github` generates the workflows, Fastlane and
-  `docs/deployment-setup.md`. `none` generates no workflows (Very Good CLI's
-  included) and leaves the deployment skill out of the AI layer;
-  `scripts/quality_gate.sh` is always generated.
-- **Coverage floor.** CI enforces it, and the generator itself fails if a
-  freshly generated app falls below it.
+## Other ways to install
 
-## Install
-
-### One line (recommended)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/alamin-karno/flutter-kickstart/main/install.sh | bash
-```
-
-This clones the repo into `~/.flutter-kickstart`, links `fks` and
-`flutter-kickstart` into `~/.local/bin` (it tells you if that isn't on your
-`PATH`), and links the skills for every agent. `fks update` pulls new
-versions. Override locations with `FLUTTER_KICKSTART_HOME` and
-`FLUTTER_KICKSTART_BIN`.
-
-On Windows: `irm https://raw.githubusercontent.com/alamin-karno/flutter-kickstart/main/install.ps1 | iex`
-(copies the skills and adds `fks` to your user `PATH`).
-
-### Claude Code (plugin)
+**Claude Code plugin**
 
 ```text
 /plugin marketplace add alamin-karno/flutter-kickstart
 /plugin install flutter-kickstart@flutter-kickstart
 ```
 
-### From a clone
+**From a clone** (to change the templates, or for agents that ignore symlinks)
 
 ```bash
 git clone https://github.com/alamin-karno/flutter-kickstart.git ~/flutter-kickstart
-~/flutter-kickstart/install.sh               # symlinks; `fks update` updates them
-~/flutter-kickstart/install.sh --copy        # for agents that ignore symlinks
+~/flutter-kickstart/install.sh               # symlinks; `fks update` keeps them current
+~/flutter-kickstart/install.sh --copy        # real copies
 ~/flutter-kickstart/install.sh --skills-only # skills only, no `fks` command
 ~/flutter-kickstart/install.sh --uninstall
 ```
 
-The installer links `skills/flutter-kickstart` and `skills/flutter-figma-to-flutter` into:
+The installer links the skills into each agent's global folder: Claude Code
+(`~/.claude/skills`), Cursor (`~/.cursor/skills`), Windsurf
+(`~/.codeium/windsurf/skills`), Antigravity (`~/.gemini/config/skills`),
+Codex (`~/.codex/skills`), Gemini CLI (`~/.gemini/skills`) and the shared
+`~/.agents/skills`. Start a **new** agent session after installing.
+[Full install guide](https://alamin-karno.github.io/flutter-kickstart/guide/installation).
 
-| Agent | Global skills folder |
-| --- | --- |
-| Claude Code | `~/.claude/skills/` |
-| Cursor | `~/.cursor/skills/`, `~/.agents/skills/` |
-| Windsurf | `~/.codeium/windsurf/skills/` |
-| Antigravity | `~/.gemini/config/skills/`, `~/.gemini/antigravity/skills/` |
-| Codex | `~/.codex/skills/`, `~/.agents/skills/` |
-| Gemini CLI | `~/.gemini/skills/`, `~/.agents/skills/` |
+> Installs and `fks update` always use the `main` branch, which only holds
+> released versions.
 
-Agents without skill support: tell the agent *"Read
-`~/.flutter-kickstart/skills/flutter-kickstart/SKILL.md` and follow
-it."*
+## Contributing
 
-Start a **new** agent session after installing.
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
 
-### Prerequisites
+In short: branch from `dev` (`feature/...`, `fix/...`), open a pull request
+into `dev`, and keep CI green. Releases go from `dev` to `main` through a
+`release/x.y.z` branch and get a `vX.Y.Z` tag. Nobody pushes to `dev` or
+`main` directly. See [Branches and releases](https://alamin-karno.github.io/flutter-kickstart/contributing/git-flow).
 
-Flutter (or [fvm](https://fvm.app)), `python3` (3.8+), network access for
-`pub get`. Very Good CLI is activated automatically if missing. For iOS:
-macOS + Xcode.
-
-## Use
-
-Ask in plain words, for example:
-
-- *"Create a new Flutter app called Acme Wallet for com.acme."*
-- *"Add an orders feature that loads `/v1/orders`."* (inside a generated app)
-- *"Implement this Figma frame: <link>"* (needs a Figma MCP server)
-
-Or run the generator yourself (`fks create` takes the same flags):
-
-```bash
-fks create \
-  --name acme_wallet --app-name "Acme Wallet" --org com.acme \
-  --platforms android,ios --state bloc --network viva \
-  --base-url development=https://dev.api.acme.com \
-  --base-url staging=https://stg.api.acme.com \
-  --base-url production=https://api.acme.com \
-  --features auth,orders --locales en,bn --crash sentry --ci github --agents all
-```
-
-`--config answers.json` takes the same keys. `--dry-run` prints the plan.
-
-Inside a generated app:
-
-```bash
-fks run staging                                     # or: fks run (development)
-fks add-feature orders --endpoint /v1/orders        # or: python3 tool/kickstart/add_feature.py --name orders
-./scripts/quality_gate.sh
-```
-
-## How the AI layer works in a generated app
-
-```
-AGENTS.md                      canonical rules (Cursor, Windsurf, Antigravity, Codex, Copilot read it natively)
-CLAUDE.md, GEMINI.md           one line each: @AGENTS.md
-.agents/skills/<skill>/        canonical project skills
-.claude/skills  -> .agents/skills
-.cursor/skills  -> .agents/skills
-.windsurf/skills -> .agents/skills
-.cursor/rules/flutter-architecture.mdc     glob rule for lib/**/*.dart
-.windsurf/rules/flutter-architecture.md    glob rule for lib/**/*.dart
-.github/copilot-instructions.md
-.claude/agents/{architecture,test}-reviewer.md
-```
-
-Edit `.agents/skills/` and `AGENTS.md` only; every tool sees the change.
-`--copy-skills` (or Windows) writes real copies instead of symlinks.
-Refresh the layer later with `python3 skills/flutter-kickstart/scripts/setup_ai.py --root <app>`.
-
-## Layout
-
-```
-.claude-plugin/{plugin,marketplace}.json   Claude Code plugin + marketplace
-skills/
-  flutter-kickstart/
-    SKILL.md                               interview + how to run the generator
-    scripts/scaffold.py                    full project generator
-    scripts/add_feature.py                 feature generator (also vendored into apps)
-    scripts/setup_ai.py                    cross-agent AI layer installer
-    templates/lib, test                    core + app shell (Dart)
-    templates/feature/{common,bloc,riverpod,home}
-    templates/project                      always generated: quality gate, Figma token map
-    templates/ci/github                    GitHub Actions, Fastlane, deployment docs (--ci github)
-    templates/ai                           AGENTS.md, rules, project skills, subagents
-  flutter-figma-to-flutter/SKILL.md        design-to-code
-bin/flutter-kickstart                      the `fks` CLI (create, run, add-feature, doctor, update)
-install.sh, install.ps1                    one-line installers: CLI + skills for every agent
-docs/                                      plan, comparison with app-team-agent-skills
-```
-
-## Changing the templates
-
-1. Edit under `skills/flutter-kickstart/templates/` or `scripts/`.
-   A template named `x.<choice>.dart.tmpl` is only generated for that
-   choice (`bloc`, `riverpod`, `viva`, `dio`) and loses the `.<choice>`
-   part, e.g. `dio_api_client.dio.dart.tmpl` -> `dio_api_client.dart`.
-2. Regenerate both sides of every choice and make sure they pass (the
-   generator runs analyze, tests and the coverage floor):
-   ```bash
-   cd /tmp && python3 <repo>/skills/flutter-kickstart/scripts/scaffold.py --name demo_bloc --org com.acme --state bloc --network viva --ci github --locales en,bn --features orders --crash sentry
-   cd /tmp && python3 <repo>/skills/flutter-kickstart/scripts/scaffold.py --name demo_rp --org com.acme --state riverpod --network dio --ci none --features orders --crash crashlytics
-   ```
-3. Bump `version` in `.claude-plugin/plugin.json` and run `claude plugin validate .`.
+- [Report a bug](https://github.com/alamin-karno/flutter-kickstart/issues/new?template=bug_report.yml)
+- [Request a feature](https://github.com/alamin-karno/flutter-kickstart/issues/new?template=feature_request.yml)
+- [Security policy](SECURITY.md) · [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## License
 
 [MIT](LICENSE) © Md. Al-Amin
+
+<p align="center">
+  If Flutter Kickstart saves you time, please ⭐ the repo. It helps others find it.
+</p>
