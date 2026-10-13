@@ -1,0 +1,21 @@
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+
+/// Wire format of {{Entity}}. Registered with the JSON serializer in DI
+/// (`addParser<{{Entity}}Model>({{Entity}}Model.fromJson)`).
+class {{Entity}}Model {
+  const {{Entity}}Model({required this.id, required this.title});
+
+  factory {{Entity}}Model.fromJson(Map<String, dynamic> json) {
+    return {{Entity}}Model(
+      id: json['id'].toString(),
+      title: (json['title'] ?? json['name'] ?? '') as String,
+    );
+  }
+
+  final String id;
+  final String title;
+
+  Map<String, dynamic> toJson() => {'id': id, 'title': title};
+
+  {{Entity}} toEntity() => {{Entity}}(id: id, title: title);
+}

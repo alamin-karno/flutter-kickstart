@@ -1,0 +1,45 @@
+import 'dart:async';
+import 'dart:ui';
+
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:{{package}}/app/app.dart';
+import 'package:{{package}}/core/config/app_config.dart';
+import 'package:{{package}}/core/di/providers.dart';
+{{crash_import}}
+import 'package:{{package}}/core/logging/app_logger.dart';
+
+/// Shared startup for every flavor: crash reporting, then the app inside a
+/// [ProviderScope] carrying the per-flavor config.
+Future<void> bootstrap({required AppConfig config}) async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final logger = DefaultAppLogger(minLevel: config.isProduction ? 2 : 0);
+  final crashReporter = {{crash_ctor}};
+  await crashReporter.init();
+
+  FlutterError.onError = (details) {
+    logger.error(
+      details.exceptionAsString(),
+      error: details.exception,
+      stackTrace: details.stack,
+    );
+    unawaited(
+      crashReporter.recordError(details.exception, details.stack, fatal: true),
+    );
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    unawaited(crashReporter.recordError(error, stack, fatal: true));
+    return true;
+  };
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        appConfigProvider.overrideWithValue(config),
+        crashReporterProvider.overrideWithValue(crashReporter),
+      ],
+      child: const App(),
+    ),
+  );
+}

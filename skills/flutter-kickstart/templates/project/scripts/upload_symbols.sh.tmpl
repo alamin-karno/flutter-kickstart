@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Uploads obfuscation symbols so production crashes stay readable.
+# Pairs with `--obfuscate --split-debug-info=<dir>` in android.yml / ios.yml.
+set -euo pipefail
+
+SYMBOLS_DIR="${1:?usage: upload_symbols.sh <symbols-dir>}"
+PROVIDER="{{crash}}"
+
+case "$PROVIDER" in
+  sentry)
+    # Needs SENTRY_AUTH_TOKEN, SENTRY_ORG and SENTRY_PROJECT (see docs/deployment-setup.md).
+    npx --yes @sentry/cli debug-files upload --include-sources "$SYMBOLS_DIR"
+    ;;
+  crashlytics)
+    # Needs FIREBASE_TOKEN (or GOOGLE_APPLICATION_CREDENTIALS) and FIREBASE_APP_ID.
+    npx --yes firebase-tools crashlytics:symbols:upload --app="${FIREBASE_APP_ID:?}" "$SYMBOLS_DIR"
+    ;;
+  *)
+    echo "No crash-reporting backend configured; keeping symbols in $SYMBOLS_DIR only."
+    ;;
+esac

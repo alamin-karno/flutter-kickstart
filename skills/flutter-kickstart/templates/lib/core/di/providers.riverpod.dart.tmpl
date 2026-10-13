@@ -1,0 +1,47 @@
+// One statement per parser keeps `add_feature.py` insertions format-proof.
+// ignore_for_file: cascade_invocations
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:{{package}}/core/config/app_config.dart';
+import 'package:{{package}}/core/error_reporting/crash_reporter.dart';
+import 'package:{{package}}/core/logging/app_logger.dart';
+import 'package:{{package}}/core/network/api_interceptors.dart';
+import 'package:{{package}}/core/network/app_api_client.dart';
+import 'package:viva_network_kit/viva_network_kit.dart';
+// scaffold:model-imports
+
+/// The provider graph is the DI graph: no separate service locator.
+///
+/// [appConfigProvider] and [crashReporterProvider] are overridden in
+/// `bootstrap.dart` with the real per-flavor instances.
+final appConfigProvider = Provider<AppConfig>(
+  (ref) => throw UnimplementedError('Overridden in bootstrap()'),
+);
+
+final crashReporterProvider = Provider<CrashReporter>(
+  (ref) => throw UnimplementedError('Overridden in bootstrap()'),
+);
+
+final appLoggerProvider = Provider<AppLogger>((ref) {
+  final config = ref.watch(appConfigProvider);
+  return DefaultAppLogger(minLevel: config.isProduction ? 2 : 0);
+});
+
+/// One `addParser` per model decoded through [AppApiClient].
+final jsonSerializerProvider = Provider<JsonSerializer>((ref) {
+  final serializer = JsonSerializer();
+  // scaffold:parsers
+  return serializer;
+});
+
+final appApiClientProvider = Provider<AppApiClient>((ref) {
+  return VivaApiClient.create(
+    baseUrl: ref.watch(appConfigProvider).apiBaseUrl,
+    serializer: ref.watch(jsonSerializerProvider),
+    interceptors: [
+      // Replace `() => null` with a read from secure storage once auth exists.
+      AuthInterceptor(() => null),
+      LoggingInterceptor(ref.watch(appLoggerProvider)),
+    ],
+  );
+});

@@ -1,0 +1,25 @@
+import 'package:flutter/material.dart';
+import 'package:{{package}}/core/theming/app_theme_extension.dart';
+
+/// Light and dark [ThemeData]. The only place colours enter the app;
+/// replace the seed and [AppColors] values with the design system's.
+abstract final class AppTheme {
+  static ThemeData get light => _build(Brightness.light, AppColors.light);
+
+  static ThemeData get dark => _build(Brightness.dark, AppColors.dark);
+
+  static ThemeData _build(Brightness brightness, AppColors appColors) {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: appColors.brand,
+      brightness: brightness,
+    );
+    return ThemeData(
+      colorScheme: colorScheme,
+      extensions: [appColors],
+      appBarTheme: AppBarTheme(
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
+      ),
+    );
+  }
+}

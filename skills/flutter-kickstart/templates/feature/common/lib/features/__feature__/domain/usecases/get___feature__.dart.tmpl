@@ -1,0 +1,13 @@
+import 'package:dartz/dartz.dart' show Either;
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+import 'package:{{package}}/features/{{feature}}/domain/repositories/{{feature}}_repository.dart';
+
+class Get{{Feature}} {
+  const Get{{Feature}}(this._repository);
+
+  final {{Feature}}Repository _repository;
+
+  Future<Either<AppFailure, List<{{Entity}}>>> call() =>
+      _repository.get{{Feature}}();
+}

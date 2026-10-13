@@ -1,0 +1,52 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/core/widgets/failure_view.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+import 'package:{{package}}/features/{{feature}}/presentation/controllers/{{feature}}_controller.dart';
+import 'package:{{package}}/features/{{feature}}/presentation/controllers/{{feature}}_state.dart';
+import 'package:{{package}}/l10n/l10n.dart';
+
+class {{Feature}}Screen extends ConsumerWidget {
+  const {{Feature}}Screen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch({{feature_camel}}ControllerProvider);
+    void reload() => ref.read({{feature_camel}}ControllerProvider.notifier).reload();
+
+    return Scaffold(
+      appBar: AppBar(title: Text(context.l10n.{{feature_camel}}Title)),
+      body: switch (state) {
+        AsyncData(value: {{Feature}}Loaded(:final items)) => _{{Entity}}List(
+          items: items,
+        ),
+        AsyncData(value: {{Feature}}Failed(:final failure)) => FailureView(
+          failure: failure,
+          onRetry: reload,
+        ),
+        AsyncError() => FailureView(
+          failure: const UnknownFailure(),
+          onRetry: reload,
+        ),
+        _ => const Center(child: CircularProgressIndicator()),
+      },
+    );
+  }
+}
+
+class _{{Entity}}List extends StatelessWidget {
+  const _{{Entity}}List({required this.items});
+
+  final List<{{Entity}}> items;
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) return Center(child: Text(context.l10n.emptyList));
+    return ListView.separated(
+      itemCount: items.length,
+      separatorBuilder: (_, _) => const Divider(height: 1),
+      itemBuilder: (context, index) => ListTile(title: Text(items[index].title)),
+    );
+  }
+}

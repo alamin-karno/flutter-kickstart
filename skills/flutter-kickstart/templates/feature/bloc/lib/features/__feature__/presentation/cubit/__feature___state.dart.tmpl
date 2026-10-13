@@ -1,0 +1,25 @@
+part of '{{feature}}_cubit.dart';
+
+sealed class {{Feature}}State {
+  const {{Feature}}State();
+}
+
+final class {{Feature}}Initial extends {{Feature}}State {
+  const {{Feature}}Initial();
+}
+
+final class {{Feature}}Loading extends {{Feature}}State {
+  const {{Feature}}Loading();
+}
+
+final class {{Feature}}Loaded extends {{Feature}}State {
+  const {{Feature}}Loaded(this.items);
+
+  final List<{{Entity}}> items;
+}
+
+final class {{Feature}}Failed extends {{Feature}}State {
+  const {{Feature}}Failed(this.failure);
+
+  final AppFailure failure;
+}

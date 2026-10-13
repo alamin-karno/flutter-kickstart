@@ -1,0 +1,42 @@
+/// Typed failures returned by repositories instead of raw exceptions.
+///
+/// Transport errors are converted into these once, in
+/// `app_failure_converter.dart`. Nothing above the data layer ever sees a
+/// raw exception. Show a failure to the user through
+/// `failure.message` (or map subtypes to localized strings in one place).
+sealed class AppFailure {
+  const AppFailure(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'AppFailure($message)';
+}
+
+/// No connectivity, or the request timed out.
+final class NetworkFailure extends AppFailure {
+  const NetworkFailure([super.message = 'Network error, please try again.']);
+}
+
+/// The server answered with a non-2xx status code.
+final class ServerFailure extends AppFailure {
+  const ServerFailure(this.statusCode, [super.message = 'Server error.']);
+
+  final int? statusCode;
+}
+
+/// HTTP 401: the session is missing or expired.
+final class UnauthorizedFailure extends AppFailure {
+  const UnauthorizedFailure([super.message = 'Session expired.']);
+}
+
+/// The response arrived but could not be decoded into the expected model
+/// (missing parser registration, or the JSON shape changed).
+final class ParsingFailure extends AppFailure {
+  const ParsingFailure([super.message = 'Unexpected response from server.']);
+}
+
+/// Anything not covered above.
+final class UnknownFailure extends AppFailure {
+  const UnknownFailure([super.message = 'Something went wrong.']);
+}

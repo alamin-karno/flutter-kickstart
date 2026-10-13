@@ -1,0 +1,17 @@
+import 'package:meta/meta.dart';
+
+/// {{Entity}} as the app sees it. Plain Dart: no JSON, no Flutter.
+@immutable
+class {{Entity}} {
+  const {{Entity}}({required this.id, required this.title});
+
+  final String id;
+  final String title;
+
+  @override
+  bool operator ==(Object other) =>
+      other is {{Entity}} && other.id == id && other.title == title;
+
+  @override
+  int get hashCode => Object.hash(id, title);
+}

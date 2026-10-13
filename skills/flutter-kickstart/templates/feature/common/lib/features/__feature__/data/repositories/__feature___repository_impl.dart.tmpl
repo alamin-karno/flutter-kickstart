@@ -1,0 +1,17 @@
+import 'package:dartz/dartz.dart' show Either;
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/features/{{feature}}/data/datasources/{{feature}}_remote_data_source.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+import 'package:{{package}}/features/{{feature}}/domain/repositories/{{feature}}_repository.dart';
+
+class {{Feature}}RepositoryImpl implements {{Feature}}Repository {
+  const {{Feature}}RepositoryImpl(this._remote);
+
+  final {{Feature}}RemoteDataSource _remote;
+
+  @override
+  Future<Either<AppFailure, List<{{Entity}}>>> get{{Feature}}() async {
+    final result = await _remote.fetch{{Feature}}();
+    return result.map((models) => models.map((m) => m.toEntity()).toList());
+  }
+}

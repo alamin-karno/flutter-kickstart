@@ -1,0 +1,45 @@
+import 'package:dartz/dartz.dart' show Left, Right;
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/features/{{feature}}/data/datasources/{{feature}}_remote_data_source.dart';
+import 'package:{{package}}/features/{{feature}}/data/models/{{entity}}_model.dart';
+import 'package:{{package}}/features/{{feature}}/data/repositories/{{feature}}_repository_impl.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+
+class _MockRemote extends Mock implements {{Feature}}RemoteDataSource {}
+
+void main() {
+  late _MockRemote remote;
+  late {{Feature}}RepositoryImpl repository;
+
+  setUp(() {
+    remote = _MockRemote();
+    repository = {{Feature}}RepositoryImpl(remote);
+  });
+
+  group('{{Feature}}RepositoryImpl', () {
+    test('maps models to entities on success', () async {
+      when(() => remote.fetch{{Feature}}()).thenAnswer(
+        (_) async => const Right([{{Entity}}Model(id: '1', title: 'First')]),
+      );
+
+      final result = await repository.get{{Feature}}();
+
+      expect(
+        result.getOrElse(() => []),
+        const [{{Entity}}(id: '1', title: 'First')],
+      );
+    });
+
+    test('passes failures through unchanged', () async {
+      when(
+        () => remote.fetch{{Feature}}(),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
+
+      final result = await repository.get{{Feature}}();
+
+      expect(result, const Left<AppFailure, List<{{Entity}}>>(NetworkFailure()));
+    });
+  });
+}

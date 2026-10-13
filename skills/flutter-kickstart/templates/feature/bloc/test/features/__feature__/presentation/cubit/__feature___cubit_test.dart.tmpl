@@ -1,0 +1,52 @@
+import 'package:bloc_test/bloc_test.dart';
+import 'package:dartz/dartz.dart' show Left, Right;
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+import 'package:{{package}}/features/{{feature}}/domain/usecases/get_{{feature}}.dart';
+import 'package:{{package}}/features/{{feature}}/presentation/cubit/{{feature}}_cubit.dart';
+
+class _MockGet{{Feature}} extends Mock implements Get{{Feature}} {}
+
+void main() {
+  late _MockGet{{Feature}} get{{Feature}};
+
+  setUp(() => get{{Feature}} = _MockGet{{Feature}}());
+
+  group('{{Feature}}Cubit', () {
+    test('starts in {{Feature}}Initial', () {
+      expect({{Feature}}Cubit(get{{Feature}}).state, isA<{{Feature}}Initial>());
+    });
+
+    blocTest<{{Feature}}Cubit, {{Feature}}State>(
+      'emits [Loading, Loaded] on success',
+      setUp: () => when(() => get{{Feature}}()).thenAnswer(
+        (_) async => const Right([{{Entity}}(id: '1', title: 'First')]),
+      ),
+      build: () => {{Feature}}Cubit(get{{Feature}}),
+      act: (cubit) => cubit.load(),
+      expect: () => [
+        isA<{{Feature}}Loading>(),
+        isA<{{Feature}}Loaded>().having((s) => s.items.length, 'items', 1),
+      ],
+    );
+
+    blocTest<{{Feature}}Cubit, {{Feature}}State>(
+      'emits [Loading, Failed] on failure',
+      setUp: () => when(
+        () => get{{Feature}}(),
+      ).thenAnswer((_) async => const Left(ServerFailure(500))),
+      build: () => {{Feature}}Cubit(get{{Feature}}),
+      act: (cubit) => cubit.load(),
+      expect: () => [
+        isA<{{Feature}}Loading>(),
+        isA<{{Feature}}Failed>().having(
+          (s) => s.failure,
+          'failure',
+          isA<ServerFailure>(),
+        ),
+      ],
+    );
+  });
+}

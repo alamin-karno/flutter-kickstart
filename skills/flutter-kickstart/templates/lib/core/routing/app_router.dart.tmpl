@@ -1,0 +1,25 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+// scaffold:imports
+
+/// Route paths. Every screen gets a constant here before anything links to
+/// it. Navigate with `context.push(AppRoutes.x)` / `context.go(...)`, never
+/// a raw string or `Navigator.push`.
+abstract final class AppRoutes {
+  // scaffold:route-paths
+}
+
+/// Builds the app's single [GoRouter]. Feature routes are added at the
+/// `scaffold:routes` marker (the scaffold's `add_feature.py` does this).
+GoRouter buildAppRouter({
+  String? initialLocation,
+  List<NavigatorObserver> observers = const [],
+}) {
+  return GoRouter(
+    initialLocation: initialLocation ?? AppRoutes.home,
+    observers: observers,
+    routes: [
+      // scaffold:routes
+    ],
+  );
+}

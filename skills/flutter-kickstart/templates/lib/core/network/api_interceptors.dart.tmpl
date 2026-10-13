@@ -1,0 +1,47 @@
+import 'package:dio/dio.dart';
+import 'package:{{package}}/core/logging/app_logger.dart';
+
+/// Attaches the current auth token to outgoing requests.
+class AuthInterceptor extends Interceptor {
+  AuthInterceptor(this._tokenProvider);
+
+  final String? Function() _tokenProvider;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    final token = _tokenProvider();
+    if (token != null) {
+      options.headers['Authorization'] = 'Bearer $token';
+    }
+    handler.next(options);
+  }
+}
+
+/// Logs request/response summaries through [AppLogger] instead of print.
+/// Never logs headers or bodies: they can carry tokens and personal data.
+class LoggingInterceptor extends Interceptor {
+  LoggingInterceptor(this._logger);
+
+  final AppLogger _logger;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    _logger.debug('--> ${options.method} ${options.uri}');
+    handler.next(options);
+  }
+
+  @override
+  void onResponse(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+  ) {
+    _logger.debug('<-- ${response.statusCode} ${response.requestOptions.uri}');
+    handler.next(response);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    _logger.error('x-- ${err.requestOptions.uri}', error: err);
+    handler.next(err);
+  }
+}

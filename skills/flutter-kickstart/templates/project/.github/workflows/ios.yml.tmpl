@@ -1,0 +1,78 @@
+name: iOS Build & Deploy
+
+# Branch -> flavor mapping MUST match android.yml and ios/fastlane/Fastfile.
+on:
+  push:
+    branches: [develop, staging, main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & sign iOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "{{flutter_version}}"
+          channel: stable
+          cache: true
+
+      - name: Resolve flavor from branch
+        id: flavor
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            develop) echo "flavor=development" >> "$GITHUB_OUTPUT" ;;
+            staging) echo "flavor=staging" >> "$GITHUB_OUTPUT" ;;
+            main)    echo "flavor=production" >> "$GITHUB_OUTPUT" ;;
+            *) echo "No flavor mapped for branch $GITHUB_REF_NAME" >&2; exit 1 ;;
+          esac
+
+      - run: flutter pub get
+
+      # Writes flavor, obfuscation and --dart-define values into the Xcode
+      # config so Fastlane's archive builds the right thing.
+      - name: Configure Flutter build
+        run: >
+          flutter build ios --release --no-codesign --config-only
+          --flavor ${{ steps.flavor.outputs.flavor }}
+          --target lib/main_${{ steps.flavor.outputs.flavor }}.dart
+          --obfuscate --split-debug-info=build/ios/symbols
+          --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}
+          --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: ios
+
+      - name: Fastlane
+        working-directory: ios
+        run: |
+          if [ "${{ steps.flavor.outputs.flavor }}" = "production" ]; then
+            bundle exec fastlane release flavor:production
+          else
+            bundle exec fastlane beta flavor:${{ steps.flavor.outputs.flavor }}
+          fi
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+      - name: Upload debug symbols
+        if: steps.flavor.outputs.flavor == 'production'
+        run: ./scripts/upload_symbols.sh build/ios/symbols
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID_IOS }}

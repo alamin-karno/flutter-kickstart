@@ -1,0 +1,52 @@
+import 'package:dartz/dartz.dart' show Left, Right;
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/core/widgets/failure_view.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+import 'package:{{package}}/features/{{feature}}/domain/usecases/get_{{feature}}.dart';
+import 'package:{{package}}/features/{{feature}}/{{feature}}_providers.dart';
+import 'package:{{package}}/features/{{feature}}/presentation/screens/{{feature}}_screen.dart';
+
+import '../../../../helpers/helpers.dart';
+
+class _MockGet{{Feature}} extends Mock implements Get{{Feature}} {}
+
+void main() {
+  late _MockGet{{Feature}} get{{Feature}};
+
+  setUp(() => get{{Feature}} = _MockGet{{Feature}}());
+
+  Future<void> pumpScreen(WidgetTester tester) => tester.pumpApp(
+    ProviderScope(
+      overrides: [get{{Feature}}Provider.overrideWithValue(get{{Feature}})],
+      child: const {{Feature}}Screen(),
+    ),
+  );
+
+  group('{{Feature}}Screen', () {
+    testWidgets('shows the items once loaded', (tester) async {
+      when(() => get{{Feature}}()).thenAnswer(
+        (_) async => const Right([{{Entity}}(id: '1', title: 'First')]),
+      );
+      await pumpScreen(tester);
+      await tester.pumpAndSettle();
+      expect(find.text('First'), findsOneWidget);
+    });
+
+    testWidgets('shows FailureView and retries on tap', (tester) async {
+      when(
+        () => get{{Feature}}(),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
+      await pumpScreen(tester);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(FailureView), findsOneWidget);
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+      verify(() => get{{Feature}}()).called(2);
+    });
+  });
+}

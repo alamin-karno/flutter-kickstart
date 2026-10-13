@@ -1,0 +1,55 @@
+import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/core/widgets/failure_view.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+import 'package:{{package}}/features/{{feature}}/presentation/cubit/{{feature}}_cubit.dart';
+import 'package:{{package}}/features/{{feature}}/presentation/screens/{{feature}}_screen.dart';
+
+import '../../../../helpers/helpers.dart';
+
+class _MockCubit extends MockCubit<{{Feature}}State> implements {{Feature}}Cubit {}
+
+void main() {
+  late _MockCubit cubit;
+
+  setUp(() => cubit = _MockCubit());
+
+  Future<void> pumpView(WidgetTester tester) => tester.pumpApp(
+    BlocProvider<{{Feature}}Cubit>.value(
+      value: cubit,
+      child: const {{Feature}}View(),
+    ),
+  );
+
+  group('{{Feature}}View', () {
+    testWidgets('shows a spinner while loading', (tester) async {
+      when(() => cubit.state).thenReturn(const {{Feature}}Loading());
+      await pumpView(tester);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
+
+    testWidgets('shows the items once loaded', (tester) async {
+      when(() => cubit.state).thenReturn(
+        const {{Feature}}Loaded([{{Entity}}(id: '1', title: 'First')]),
+      );
+      await pumpView(tester);
+      expect(find.text('First'), findsOneWidget);
+    });
+
+    testWidgets('shows FailureView and retries on tap', (tester) async {
+      when(
+        () => cubit.state,
+      ).thenReturn(const {{Feature}}Failed(NetworkFailure()));
+      when(() => cubit.load()).thenAnswer((_) async {});
+      await pumpView(tester);
+
+      expect(find.byType(FailureView), findsOneWidget);
+      await tester.tap(find.byType(FilledButton));
+      verify(() => cubit.load()).called(1);
+    });
+  });
+}

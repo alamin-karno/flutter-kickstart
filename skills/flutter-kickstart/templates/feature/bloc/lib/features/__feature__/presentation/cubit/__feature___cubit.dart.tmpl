@@ -1,0 +1,18 @@
+import 'package:bloc/bloc.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+import 'package:{{package}}/features/{{feature}}/domain/usecases/get_{{feature}}.dart';
+
+part '{{feature}}_state.dart';
+
+class {{Feature}}Cubit extends Cubit<{{Feature}}State> {
+  {{Feature}}Cubit(this._get{{Feature}}) : super(const {{Feature}}Initial());
+
+  final Get{{Feature}} _get{{Feature}};
+
+  Future<void> load() async {
+    emit(const {{Feature}}Loading());
+    final result = await _get{{Feature}}();
+    emit(result.fold({{Feature}}Failed.new, {{Feature}}Loaded.new));
+  }
+}

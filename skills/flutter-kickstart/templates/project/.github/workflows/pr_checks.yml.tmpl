@@ -1,0 +1,33 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [develop, staging, main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality_gate:
+    name: Format, analyze, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "{{flutter_version}}"
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - run: ./scripts/quality_gate.sh
+
+      - name: Verify coverage
+        uses: VeryGoodOpenSource/very_good_coverage@v3
+        with:
+          path: coverage/lcov.info
+          min_coverage: {{coverage_floor}}
+          exclude: "**/*.g.dart **/*.config.dart lib/l10n/gen/** lib/main_*.dart lib/bootstrap.dart"

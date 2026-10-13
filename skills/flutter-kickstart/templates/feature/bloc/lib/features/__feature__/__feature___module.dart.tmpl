@@ -1,0 +1,29 @@
+import 'package:injectable/injectable.dart';
+import 'package:{{package}}/core/network/app_api_client.dart';
+import 'package:{{package}}/features/{{feature}}/data/datasources/{{feature}}_remote_data_source.dart';
+import 'package:{{package}}/features/{{feature}}/data/repositories/{{feature}}_repository_impl.dart';
+import 'package:{{package}}/features/{{feature}}/domain/repositories/{{feature}}_repository.dart';
+import 'package:{{package}}/features/{{feature}}/domain/usecases/get_{{feature}}.dart';
+import 'package:{{package}}/features/{{feature}}/presentation/cubit/{{feature}}_cubit.dart';
+
+/// DI wiring for the {{feature}} feature. The only file in the feature that
+/// knows which implementation backs each interface. Re-run build_runner
+/// after changing it.
+@module
+abstract class {{Feature}}Module {
+  @lazySingleton
+  {{Feature}}RemoteDataSource remote(AppApiClient client) =>
+      {{Feature}}RemoteDataSourceImpl(client);
+
+  @lazySingleton
+  {{Feature}}Repository repository({{Feature}}RemoteDataSource remote) =>
+      {{Feature}}RepositoryImpl(remote);
+
+  @injectable
+  Get{{Feature}} get{{Feature}}({{Feature}}Repository repository) =>
+      Get{{Feature}}(repository);
+
+  @injectable
+  {{Feature}}Cubit cubit(Get{{Feature}} get{{Feature}}) =>
+      {{Feature}}Cubit(get{{Feature}});
+}

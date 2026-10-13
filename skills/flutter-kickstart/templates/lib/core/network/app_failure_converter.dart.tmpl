@@ -1,0 +1,40 @@
+import 'package:dio/dio.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:viva_network_kit/viva_network_kit.dart';
+
+/// Plugs [AppFailure] into `viva_network_kit` as its error type, so every
+/// `AppApiClient` call already returns `Either<AppFailure, T>` with no
+/// per-repository mapping.
+class AppFailureConverter implements NetworkErrorConverter<AppFailure> {
+  const AppFailureConverter();
+
+  @override
+  AppFailure convert(Exception exception) {
+    return switch (exception) {
+      // Raised by viva_network_kit before the request is sent when the
+      // device is offline.
+      ConnectionError() => const NetworkFailure(),
+      DioException() => _fromDioException(exception),
+      FormatException() => const ParsingFailure(),
+      _ => const UnknownFailure(),
+    };
+  }
+
+  AppFailure _fromDioException(DioException e) {
+    if (e.type == DioExceptionType.badResponse) {
+      final statusCode = e.response?.statusCode;
+      if (statusCode == 401) return const UnauthorizedFailure();
+      return ServerFailure(statusCode);
+    }
+    if (e.type == DioExceptionType.cancel) {
+      return const UnknownFailure('Request was cancelled.');
+    }
+    // connectionError and every timeout type (the set grows across dio
+    // versions, e.g. transformTimeout), so match by name.
+    if (e.type == DioExceptionType.connectionError ||
+        e.type.name.toLowerCase().contains('timeout')) {
+      return const NetworkFailure();
+    }
+    return const UnknownFailure();
+  }
+}

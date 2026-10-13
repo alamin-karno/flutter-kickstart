@@ -1,0 +1,81 @@
+import 'package:flutter/material.dart';
+
+/// Semantic colour tokens beyond Material's [ColorScheme]. Feature code
+/// reads `context.appColors.success`, never a hex literal.
+@immutable
+class AppColors extends ThemeExtension<AppColors> {
+  const AppColors({
+    required this.brand,
+    required this.success,
+    required this.warning,
+    required this.info,
+  });
+
+  final Color brand;
+  final Color success;
+  final Color warning;
+  final Color info;
+
+  static const light = AppColors(
+    brand: Color(0xFF2962FF),
+    success: Color(0xFF2E7D32),
+    warning: Color(0xFFED6C02),
+    info: Color(0xFF0288D1),
+  );
+
+  static const dark = AppColors(
+    brand: Color(0xFF82B1FF),
+    success: Color(0xFF66BB6A),
+    warning: Color(0xFFFFA726),
+    info: Color(0xFF29B6F6),
+  );
+
+  @override
+  AppColors copyWith({
+    Color? brand,
+    Color? success,
+    Color? warning,
+    Color? info,
+  }) {
+    return AppColors(
+      brand: brand ?? this.brand,
+      success: success ?? this.success,
+      warning: warning ?? this.warning,
+      info: info ?? this.info,
+    );
+  }
+
+  @override
+  AppColors lerp(ThemeExtension<AppColors>? other, double t) {
+    if (other is! AppColors) return this;
+    return AppColors(
+      brand: Color.lerp(brand, other.brand, t)!,
+      success: Color.lerp(success, other.success, t)!,
+      warning: Color.lerp(warning, other.warning, t)!,
+      info: Color.lerp(info, other.info, t)!,
+    );
+  }
+}
+
+/// Spacing tokens: `AppSpacing.md`, never a bare number.
+abstract final class AppSpacing {
+  static const double xs = 4;
+  static const double sm = 8;
+  static const double md = 16;
+  static const double lg = 24;
+  static const double xl = 32;
+}
+
+/// Corner radius tokens.
+abstract final class AppRadius {
+  static const double sm = 4;
+  static const double md = 8;
+  static const double lg = 16;
+}
+
+extension AppThemeX on BuildContext {
+  ThemeData get theme => Theme.of(this);
+  ColorScheme get colors => Theme.of(this).colorScheme;
+  TextTheme get textTheme => Theme.of(this).textTheme;
+  AppColors get appColors => Theme.of(this).extension<AppColors>()!;
+}

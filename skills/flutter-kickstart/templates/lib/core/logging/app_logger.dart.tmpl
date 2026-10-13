@@ -1,0 +1,44 @@
+import 'dart:developer' as developer;
+
+/// Call sites depend on this, never on a concrete logging package.
+abstract interface class AppLogger {
+  void debug(String message);
+  void info(String message);
+  void warning(String message);
+  void error(String message, {Object? error, StackTrace? stackTrace});
+}
+
+/// Default implementation on `dart:developer`. Swap the body for the
+/// `logger` package (or any other) without touching a call site.
+class DefaultAppLogger implements AppLogger {
+  const DefaultAppLogger({this.minLevel = 0});
+
+  /// 0 = debug, 1 = info, 2 = warning, 3 = error. Production builds pass 2.
+  final int minLevel;
+
+  @override
+  void debug(String message) => _log(0, 'DEBUG', message);
+
+  @override
+  void info(String message) => _log(1, 'INFO', message);
+
+  @override
+  void warning(String message) => _log(2, 'WARN', message);
+
+  @override
+  void error(String message, {Object? error, StackTrace? stackTrace}) {
+    if (minLevel > 3) return;
+    developer.log(
+      message,
+      name: 'ERROR',
+      level: 1000,
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
+
+  void _log(int level, String name, String message) {
+    if (level < minLevel) return;
+    developer.log(message, name: name, level: 500 + level * 100);
+  }
+}

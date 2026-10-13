@@ -1,0 +1,5 @@
+# Per-flavor bundle ids are set in Fastfile (IDS). CI authenticates with the
+# App Store Connect API key, so these are only for interactive local use.
+apple_id(ENV["APPLE_ID"] || "")
+itc_team_id(ENV["APP_STORE_CONNECT_TEAM_ID"] || "")
+team_id(ENV["APPLE_TEAM_ID"] || "")

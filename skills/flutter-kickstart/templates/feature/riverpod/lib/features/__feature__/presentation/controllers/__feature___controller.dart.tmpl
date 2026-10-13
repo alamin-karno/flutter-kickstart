@@ -1,0 +1,21 @@
+import 'package:{{package}}/features/{{feature}}/{{feature}}_providers.dart';
+import 'package:{{package}}/features/{{feature}}/presentation/controllers/{{feature}}_state.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part '{{feature}}_controller.g.dart';
+
+@riverpod
+class {{Feature}}Controller extends _${{Feature}}Controller {
+  @override
+  Future<{{Feature}}State> build() => _load();
+
+  Future<void> reload() async {
+    state = const AsyncLoading();
+    state = AsyncData(await _load());
+  }
+
+  Future<{{Feature}}State> _load() async {
+    final result = await ref.read(get{{Feature}}Provider).call();
+    return result.fold<{{Feature}}State>({{Feature}}Failed.new, {{Feature}}Loaded.new);
+  }
+}

@@ -1,0 +1,23 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:{{package}}/core/di/providers.dart';
+import 'package:{{package}}/features/{{feature}}/data/datasources/{{feature}}_remote_data_source.dart';
+import 'package:{{package}}/features/{{feature}}/data/repositories/{{feature}}_repository_impl.dart';
+import 'package:{{package}}/features/{{feature}}/domain/repositories/{{feature}}_repository.dart';
+import 'package:{{package}}/features/{{feature}}/domain/usecases/get_{{feature}}.dart';
+
+/// DI wiring for the {{feature}} feature: the only file in the feature that
+/// knows which implementation backs each interface. Presentation code
+/// depends on [get{{Feature}}Provider] (a domain type), never on `data/`.
+final {{feature_camel}}RemoteDataSourceProvider =
+    Provider<{{Feature}}RemoteDataSource>(
+      (ref) => {{Feature}}RemoteDataSourceImpl(ref.watch(appApiClientProvider)),
+    );
+
+final {{feature_camel}}RepositoryProvider = Provider<{{Feature}}Repository>(
+  (ref) =>
+      {{Feature}}RepositoryImpl(ref.watch({{feature_camel}}RemoteDataSourceProvider)),
+);
+
+final get{{Feature}}Provider = Provider<Get{{Feature}}>(
+  (ref) => Get{{Feature}}(ref.watch({{feature_camel}}RepositoryProvider)),
+);

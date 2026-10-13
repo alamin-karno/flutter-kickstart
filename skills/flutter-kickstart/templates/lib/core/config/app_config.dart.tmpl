@@ -1,0 +1,48 @@
+/// Build flavors. One value per `lib/main_<flavor>.dart` entrypoint and
+/// per native flavor (Android productFlavor / iOS scheme).
+enum AppFlavor {
+{{flavor_enum_values}}
+}
+
+/// Per-flavor configuration, built once in `lib/main_<flavor>.dart` and
+/// registered in DI. Feature code reads config from here, never from a
+/// literal string.
+///
+/// Values can be overridden at build time without editing code:
+/// `flutter run --flavor staging -t lib/main_staging.dart
+///   --dart-define=API_BASE_URL=https://...`
+class AppConfig {
+  const AppConfig({
+    required this.flavor,
+    required this.appName,
+    required this.apiBaseUrl,
+    required this.sentryDsn,
+  });
+
+  /// Builds a config for [flavor], letting `--dart-define` values override
+  /// the defaults captured at scaffold time.
+  factory AppConfig.fromEnvironment({
+    required AppFlavor flavor,
+    required String appName,
+    required String defaultApiBaseUrl,
+  }) {
+    const apiBaseUrl = String.fromEnvironment('API_BASE_URL');
+    const sentryDsn = String.fromEnvironment('SENTRY_DSN');
+    return AppConfig(
+      flavor: flavor,
+      appName: appName,
+      apiBaseUrl: apiBaseUrl.isEmpty ? defaultApiBaseUrl : apiBaseUrl,
+      sentryDsn: sentryDsn,
+    );
+  }
+
+  final AppFlavor flavor;
+  final String appName;
+  final String apiBaseUrl;
+
+  /// Empty unless passed with `--dart-define=SENTRY_DSN=...`. Never commit
+  /// a DSN or key to source control.
+  final String sentryDsn;
+
+  bool get isProduction => flavor.name == 'production';
+}

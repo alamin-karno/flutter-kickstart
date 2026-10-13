@@ -1,0 +1,41 @@
+// One statement per parser keeps `add_feature.py` insertions format-proof.
+// ignore_for_file: cascade_invocations
+
+import 'package:injectable/injectable.dart';
+import 'package:{{package}}/core/config/app_config.dart';
+import 'package:{{package}}/core/logging/app_logger.dart';
+import 'package:{{package}}/core/network/api_interceptors.dart';
+import 'package:{{package}}/core/network/app_api_client.dart';
+import 'package:viva_network_kit/viva_network_kit.dart';
+// scaffold:model-imports
+
+/// Third-party instances that can't carry an annotation themselves.
+@module
+abstract class RegisterModule {
+  @lazySingleton
+  AppLogger logger(AppConfig config) =>
+      DefaultAppLogger(minLevel: config.isProduction ? 2 : 0);
+
+  /// One `addParser` per model decoded through [AppApiClient].
+  @lazySingleton
+  JsonSerializer get jsonSerializer {
+    final serializer = JsonSerializer();
+    // scaffold:parsers
+    return serializer;
+  }
+
+  @lazySingleton
+  AppApiClient apiClient(
+    AppConfig config,
+    JsonSerializer serializer,
+    AppLogger logger,
+  ) => VivaApiClient.create(
+    baseUrl: config.apiBaseUrl,
+    serializer: serializer,
+    interceptors: [
+      // Replace `() => null` with a read from secure storage once auth exists.
+      AuthInterceptor(() => null),
+      LoggingInterceptor(logger),
+    ],
+  );
+}

@@ -1,0 +1,31 @@
+import 'package:flutter/material.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/core/theming/app_theme_extension.dart';
+import 'package:{{package}}/l10n/l10n.dart';
+
+/// Standard error state: the failure's message plus a retry button.
+class FailureView extends StatelessWidget {
+  const FailureView({required this.failure, required this.onRetry, super.key});
+
+  final AppFailure failure;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline, color: context.colors.error),
+            const SizedBox(height: AppSpacing.sm),
+            Text(failure.message, textAlign: TextAlign.center),
+            const SizedBox(height: AppSpacing.md),
+            FilledButton(onPressed: onRetry, child: Text(context.l10n.retry)),
+          ],
+        ),
+      ),
+    );
+  }
+}

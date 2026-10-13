@@ -1,0 +1,22 @@
+{
+  "name": "flutter-kickstart",
+  "displayName": "Flutter Kickstart",
+  "version": "1.0.0",
+  "description": "Interview-driven Flutter app scaffolding: Very Good CLI flavors, clean architecture (Bloc or Riverpod), viva_network_kit networking, go_router, theming, tests, GitHub Actions + Fastlane CI/CD, and an AI-agent layer that works in Claude Code, Cursor, Windsurf, Antigravity, Codex, Gemini CLI and Copilot.",
+  "author": {
+    "name": "Md. Al-Amin"
+  },
+  "license": "MIT",
+  "keywords": [
+    "flutter",
+    "scaffold",
+    "clean-architecture",
+    "bloc",
+    "riverpod",
+    "very_good_cli",
+    "figma",
+    "ci-cd"
+  ],
+  "repository": "https://github.com/alamin-karno/flutter-kickstart",
+  "homepage": "https://github.com/alamin-karno/flutter-kickstart"
+}

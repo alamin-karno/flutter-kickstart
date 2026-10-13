@@ -1,0 +1,51 @@
+import 'dart:async';
+
+import 'package:{{package}}/core/config/app_config.dart';
+import 'package:{{package}}/core/error_reporting/crash_reporter.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+
+/// Sentry adapter. Disabled (no-op) when no DSN is passed with
+/// `--dart-define=SENTRY_DSN=...`, so local and test runs send nothing.
+class SentryCrashReporter implements CrashReporter {
+  SentryCrashReporter(this._config);
+
+  final AppConfig _config;
+
+  bool get _enabled => _config.sentryDsn.isNotEmpty;
+
+  @override
+  Future<void> init() async {
+    if (!_enabled) return;
+    await SentryFlutter.init((options) {
+      options
+        ..dsn = _config.sentryDsn
+        ..environment = _config.flavor.name
+        ..tracesSampleRate = _config.isProduction ? 0.2 : 1.0;
+    });
+  }
+
+  @override
+  Future<void> recordError(
+    Object error,
+    StackTrace? stackTrace, {
+    bool fatal = false,
+  }) async {
+    if (!_enabled) return;
+    await Sentry.captureException(error, stackTrace: stackTrace);
+  }
+
+  @override
+  void log(String message) {
+    if (!_enabled) return;
+    unawaited(Sentry.addBreadcrumb(Breadcrumb(message: message)));
+  }
+
+  @override
+  void setUserContext({String? id, Map<String, String>? extra}) {
+    if (!_enabled) return;
+    final pending = Sentry.configureScope(
+      (scope) => scope.setUser(SentryUser(id: id)),
+    );
+    if (pending is Future<void>) unawaited(pending);
+  }
+}

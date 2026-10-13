@@ -1,0 +1,11 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/features/home/home.dart';
+
+import '../../../../helpers/helpers.dart';
+
+void main() {
+  testWidgets('HomeScreen shows the welcome text', (tester) async {
+    await tester.pumpApp(const HomeScreen());
+    expect(find.text('Welcome to {{app_name}}'), findsOneWidget);
+  });
+}

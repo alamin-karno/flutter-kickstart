@@ -1,0 +1,17 @@
+---
+description: {{app_name}} Flutter architecture rules for Dart code
+globs: lib/**/*.dart,test/**/*.dart
+alwaysApply: false
+---
+
+Follow `AGENTS.md` at the repo root. For Dart files in particular:
+
+- Layers: `presentation -> domain <- data`; features never import each other.
+- Network only via `AppApiClient`; repositories return `Either<AppFailure, T>`.
+- {{state_rule}}
+- Navigate with `context.push(AppRoutes.x)`; never `Navigator.push`.
+- Styling via `context.colors` / `context.appColors` / `AppSpacing`; text via `context.l10n`.
+- New feature: `python3 tool/kickstart/add_feature.py --name <feature>`.
+- Run `./scripts/quality_gate.sh` before finishing.
+
+Detailed guidance: `.agents/skills/<skill>/SKILL.md`.

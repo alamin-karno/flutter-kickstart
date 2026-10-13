@@ -1,0 +1,59 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/core/network/app_failure_converter.dart';
+import 'package:viva_network_kit/viva_network_kit.dart';
+
+void main() {
+  const converter = AppFailureConverter();
+  final options = RequestOptions(path: '/x');
+
+  DioException dioError(DioExceptionType type, {int? status}) => DioException(
+    requestOptions: options,
+    type: type,
+    response: status == null
+        ? null
+        : Response<dynamic>(requestOptions: options, statusCode: status),
+  );
+
+  group('AppFailureConverter', () {
+    test('offline ConnectionError -> NetworkFailure', () {
+      final failure = converter.convert(
+        ConnectionError(
+          type: ConnectionErrorType.noInternet,
+          errorCode: 'no_internet_connection',
+        ),
+      );
+      expect(failure, isA<NetworkFailure>());
+    });
+
+    test('timeouts -> NetworkFailure', () {
+      expect(
+        converter.convert(dioError(DioExceptionType.receiveTimeout)),
+        isA<NetworkFailure>(),
+      );
+    });
+
+    test('401 -> UnauthorizedFailure', () {
+      expect(
+        converter.convert(dioError(DioExceptionType.badResponse, status: 401)),
+        isA<UnauthorizedFailure>(),
+      );
+    });
+
+    test('500 -> ServerFailure with status code', () {
+      final failure = converter.convert(
+        dioError(DioExceptionType.badResponse, status: 500),
+      );
+      expect(failure, isA<ServerFailure>());
+      expect((failure as ServerFailure).statusCode, 500);
+    });
+
+    test('FormatException -> ParsingFailure', () {
+      expect(
+        converter.convert(const FormatException('bad json')),
+        isA<ParsingFailure>(),
+      );
+    });
+  });
+}

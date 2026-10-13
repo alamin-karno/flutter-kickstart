@@ -1,0 +1,8 @@
+import 'package:dartz/dartz.dart' show Either;
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+
+/// Contract the presentation layer depends on. Implemented in `data/`.
+abstract interface class {{Feature}}Repository {
+  Future<Either<AppFailure, List<{{Entity}}>>> get{{Feature}}();
+}

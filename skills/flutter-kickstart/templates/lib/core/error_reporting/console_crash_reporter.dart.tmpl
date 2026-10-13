@@ -1,0 +1,32 @@
+import 'package:{{package}}/core/error_reporting/crash_reporter.dart';
+import 'package:{{package}}/core/logging/app_logger.dart';
+
+/// Logs errors instead of sending them anywhere. Used in tests and until a
+/// crash-reporting backend is wired in.
+class ConsoleCrashReporter implements CrashReporter {
+  const ConsoleCrashReporter(this._logger);
+
+  final AppLogger _logger;
+
+  @override
+  Future<void> init() async {}
+
+  @override
+  Future<void> recordError(
+    Object error,
+    StackTrace? stackTrace, {
+    bool fatal = false,
+  }) async {
+    _logger.error(
+      fatal ? 'FATAL' : 'Non-fatal error',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
+
+  @override
+  void log(String message) => _logger.info(message);
+
+  @override
+  void setUserContext({String? id, Map<String, String>? extra}) {}
+}

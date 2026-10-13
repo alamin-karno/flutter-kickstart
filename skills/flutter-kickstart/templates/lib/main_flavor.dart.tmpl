@@ -1,0 +1,12 @@
+import 'package:{{package}}/bootstrap.dart';
+import 'package:{{package}}/core/config/app_config.dart';
+
+Future<void> main() async {
+  await bootstrap(
+    config: AppConfig.fromEnvironment(
+      flavor: AppFlavor.{{flavor_camel}},
+      appName: '{{app_name}}{{flavor_suffix}}',
+      defaultApiBaseUrl: '{{base_url}}',
+    ),
+  );
+}

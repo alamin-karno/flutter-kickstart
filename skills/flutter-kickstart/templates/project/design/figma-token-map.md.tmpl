@@ -1,0 +1,51 @@
+# {{app_name}}: Figma to Flutter token and component map
+
+Figma file: {{figma_url}}
+
+Maintained by whoever runs the `flutter-figma-to-flutter` skill. Every token
+or component discovered during an import gets a row here, so the next
+import reuses it instead of duplicating it.
+
+## Colours
+
+| Figma variable / style | Flutter | Notes |
+| --- | --- | --- |
+| _(none mapped yet)_ | `context.colors.<role>` or `context.appColors.<token>` | |
+
+## Spacing
+
+| Figma value | `AppSpacing` | Notes |
+| --- | --- | --- |
+| 4 | `AppSpacing.xs` | |
+| 8 | `AppSpacing.sm` | |
+| 16 | `AppSpacing.md` | |
+| 24 | `AppSpacing.lg` | |
+| 32 | `AppSpacing.xl` | |
+
+## Radius
+
+| Figma value | `AppRadius` | Notes |
+| --- | --- | --- |
+| 4 | `AppRadius.sm` | |
+| 8 | `AppRadius.md` | |
+| 16 | `AppRadius.lg` | |
+
+## Typography
+
+| Figma text style | `context.textTheme.<style>` | Notes |
+| --- | --- | --- |
+| _(none mapped yet)_ | | |
+
+## Components
+
+| Figma component | Flutter widget | Location |
+| --- | --- | --- |
+| _(none mapped yet)_ | | |
+
+## Adding a row
+
+1. Check the token or component isn't already listed.
+2. Add the token to `lib/core/theming/` (both light and dark) or write the
+   widget in `lib/core/widgets/` (shared) or the feature's
+   `presentation/widgets/`.
+3. Add the row here in the same change.

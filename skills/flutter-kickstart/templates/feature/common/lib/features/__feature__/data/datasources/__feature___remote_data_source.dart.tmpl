@@ -1,0 +1,20 @@
+import 'package:dartz/dartz.dart' show Either;
+import 'package:{{package}}/core/network/app_api_client.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/features/{{feature}}/data/models/{{entity}}_model.dart';
+
+abstract interface class {{Feature}}RemoteDataSource {
+  Future<Either<AppFailure, List<{{Entity}}Model>>> fetch{{Feature}}();
+}
+
+class {{Feature}}RemoteDataSourceImpl implements {{Feature}}RemoteDataSource {
+  const {{Feature}}RemoteDataSourceImpl(this._client);
+
+  static const path = '{{endpoint}}';
+
+  final AppApiClient _client;
+
+  @override
+  Future<Either<AppFailure, List<{{Entity}}Model>>> fetch{{Feature}}() =>
+      _client.getList<{{Entity}}Model>(path);
+}

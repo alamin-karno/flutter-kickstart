@@ -1,0 +1,60 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
+import 'package:{{package}}/core/error_reporting/crash_reporter.dart';
+import 'package:{{package}}/core/logging/app_logger.dart';
+
+/// Firebase Crashlytics adapter.
+///
+/// Needs Firebase configured per flavor first (`flutterfire configure`, see
+/// docs/deployment-setup.md). Until then [init] logs a warning and every
+/// call is a no-op, so the app still runs.
+class CrashlyticsCrashReporter implements CrashReporter {
+  CrashlyticsCrashReporter(this._logger);
+
+  final AppLogger _logger;
+  bool _enabled = false;
+
+  @override
+  Future<void> init() async {
+    try {
+      await Firebase.initializeApp();
+      await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+        !kDebugMode,
+      );
+      _enabled = true;
+    } on Exception catch (e) {
+      _logger.warning('Crashlytics disabled: Firebase is not configured ($e)');
+    }
+  }
+
+  @override
+  Future<void> recordError(
+    Object error,
+    StackTrace? stackTrace, {
+    bool fatal = false,
+  }) async {
+    if (!_enabled) return;
+    await FirebaseCrashlytics.instance.recordError(
+      error,
+      stackTrace,
+      fatal: fatal,
+    );
+  }
+
+  @override
+  void log(String message) {
+    if (!_enabled) return;
+    unawaited(FirebaseCrashlytics.instance.log(message));
+  }
+
+  @override
+  void setUserContext({String? id, Map<String, String>? extra}) {
+    if (!_enabled) return;
+    final crashlytics = FirebaseCrashlytics.instance;
+    if (id != null) unawaited(crashlytics.setUserIdentifier(id));
+    extra?.forEach((key, value) => unawaited(crashlytics.setCustomKey(key, value)));
+  }
+}

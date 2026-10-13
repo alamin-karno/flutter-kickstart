@@ -1,0 +1,14 @@
+{
+  "name": "flutter-kickstart",
+  "description": "Flutter tooling: app scaffolding, conventions and design-to-code skills for every AI coding agent.",
+  "owner": {
+    "name": "Md. Al-Amin"
+  },
+  "plugins": [
+    {
+      "name": "flutter-kickstart",
+      "source": "./",
+      "description": "Interview-driven Flutter app scaffolding with clean architecture, CI/CD and a cross-agent AI layer."
+    }
+  ]
+}

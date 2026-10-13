@@ -1,0 +1,61 @@
+import 'package:dartz/dartz.dart' show Left, Right;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+import 'package:{{package}}/features/{{feature}}/domain/usecases/get_{{feature}}.dart';
+import 'package:{{package}}/features/{{feature}}/{{feature}}_providers.dart';
+import 'package:{{package}}/features/{{feature}}/presentation/controllers/{{feature}}_controller.dart';
+import 'package:{{package}}/features/{{feature}}/presentation/controllers/{{feature}}_state.dart';
+
+class _MockGet{{Feature}} extends Mock implements Get{{Feature}} {}
+
+void main() {
+  late _MockGet{{Feature}} get{{Feature}};
+  late ProviderContainer container;
+
+  setUp(() {
+    get{{Feature}} = _MockGet{{Feature}}();
+    container = ProviderContainer(
+      overrides: [get{{Feature}}Provider.overrideWithValue(get{{Feature}})],
+    );
+    addTearDown(container.dispose);
+  });
+
+  group('{{Feature}}Controller', () {
+    test('starts loading', () {
+      when(() => get{{Feature}}()).thenAnswer((_) async => const Right([]));
+      expect(
+        container.read({{feature_camel}}ControllerProvider),
+        isA<AsyncLoading<{{Feature}}State>>(),
+      );
+    });
+
+    test('resolves to {{Feature}}Loaded on success', () async {
+      when(() => get{{Feature}}()).thenAnswer(
+        (_) async => const Right([{{Entity}}(id: '1', title: 'First')]),
+      );
+      final state = await container.read({{feature_camel}}ControllerProvider.future);
+      expect(
+        state,
+        isA<{{Feature}}Loaded>().having((s) => s.items.length, 'items', 1),
+      );
+    });
+
+    test('resolves to {{Feature}}Failed on failure', () async {
+      when(
+        () => get{{Feature}}(),
+      ).thenAnswer((_) async => const Left(ServerFailure(500)));
+      final state = await container.read({{feature_camel}}ControllerProvider.future);
+      expect(
+        state,
+        isA<{{Feature}}Failed>().having(
+          (s) => s.failure,
+          'failure',
+          isA<ServerFailure>(),
+        ),
+      );
+    });
+  });
+}

@@ -1,0 +1,91 @@
+# {{app_name}}
+
+{{description}}
+
+Flutter app, package `{{package}}`, application id `{{application_id}}`.
+State management: **{{state_label}}**. Crash reporting: **{{crash_label}}**.
+Flavors: {{flavor_list}}.
+
+This file is the single source of AI-agent instructions for this repo. It is
+read by Claude Code (through `CLAUDE.md`), Cursor, Windsurf, Antigravity,
+Codex, Gemini CLI and GitHub Copilot. Task-specific detail lives in the
+skills under `.agents/skills/` (mirrored into `.claude/skills`,
+`.cursor/skills` and `.windsurf/skills`). Load the matching skill before
+working on that area.
+
+## Commands
+
+```bash
+{{flutter}} run --flavor development -t lib/main_development.dart
+{{flutter}} run --flavor development -t lib/main_development.dart --dart-define=API_BASE_URL=https://...
+{{dart}} run build_runner build --delete-conflicting-outputs   # after changing DI/{{codegen_note}}
+{{flutter}} gen-l10n                                            # after editing lib/l10n/arb/*.arb
+python3 tool/kickstart/add_feature.py --name orders              # new feature, all layers + tests
+./scripts/quality_gate.sh                                       # format check, analyze, tests + coverage
+```
+
+## Architecture
+
+```
+lib/
+  app/                 App widget (MaterialApp.router, theme, l10n)
+  bootstrap.dart       startup shared by every lib/main_<flavor>.dart
+  core/                cross-feature contracts and their single implementation
+    config/            AppFlavor, AppConfig (base URL, DSNs via --dart-define)
+    di/                {{di_summary}}
+    error_reporting/   CrashReporter + adapter
+    logging/           AppLogger
+    network/           AppApiClient (viva_network_kit), AppFailure, converter, interceptors
+    routing/           AppRoutes + buildAppRouter (go_router)
+    theming/           AppTheme, AppColors, AppSpacing, AppRadius, context extensions
+    widgets/           shared widgets (FailureView)
+  features/<name>/
+    domain/            entities, repository contracts, use cases (pure Dart)
+    data/              models (JSON), remote data sources, repository impls
+    presentation/      screens + {{presentation_state}}
+    <name>_{{feature_di_file}}.dart   DI wiring for the feature
+    <name>.dart        barrel: exports only the screen
+```
+
+Dependency rule: `presentation -> domain <- data`. `domain/` imports nothing
+from `data/`, `presentation/` or Flutter. Features never import other
+features; shared pieces move to `core/`.
+
+## Non-negotiables
+
+1. Network only through `AppApiClient`. Never import `dio` or
+   `viva_network_kit` outside `lib/core/network/` and `lib/core/di/`.
+2. Errors are values: data sources and repositories return
+   `Either<AppFailure, T>` (dartz). Nothing throws across layers.
+3. {{state_rule}}
+4. Navigation: `context.push(AppRoutes.x)` / `context.go(...)` with a
+   constant from `AppRoutes`. Never `Navigator.push` or a raw path string.
+5. Theme: `context.colors`, `context.appColors`, `context.textTheme`,
+   `AppSpacing`, `AppRadius`. No `Color(0x...)`, no bare padding numbers.
+6. User-visible text: `context.l10n.<key>` only, keys in
+   `lib/l10n/arb/app_en.arb`.
+7. Log through `AppLogger`, report unexpected errors through
+   `CrashReporter`. No `print`.
+8. Secrets and base URLs never in source: `--dart-define` or CI secrets.
+9. Every change ships with tests (`test/` mirrors `lib/`), and
+   `./scripts/quality_gate.sh` passes before you say you are done.
+
+## Skills
+
+| Skill | Use when |
+| --- | --- |
+| `flutter-feature-architecture` | adding a feature, screen, repository, use case; deciding where a file goes |
+| `flutter-state-management` | writing or changing {{state_label}} code |
+| `flutter-error-handling` | anything that can fail |
+| `flutter-navigation` | adding a route or navigating |
+| `flutter-theming` | any styling; implementing a design |
+| `flutter-testing` | writing tests; the done-check after any change |
+| `flutter-deployment` | CI workflows, signing, Fastlane, releases |
+| `flutter-architecture-review` | reviewing a diff against these rules |
+| `flutter-test-review` | checking a diff has the required tests |
+| `flutter-figma-to-flutter` | implementing a Figma frame (see `figma-token-map.md`) |
+
+## Done means
+
+`dart format .`, `{{flutter}} analyze` and `{{flutter}} test` all pass, and
+the change follows the rules above. Say plainly what you could not verify.

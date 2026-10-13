@@ -1,0 +1,18 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/theming/app_theme.dart';
+import 'package:{{package}}/l10n/l10n.dart';
+
+extension PumpApp on WidgetTester {
+  /// Pumps [widget] inside a themed, localized [MaterialApp].
+  Future<void> pumpApp(Widget widget) {
+    return pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: widget,
+      ),
+    );
+  }
+}

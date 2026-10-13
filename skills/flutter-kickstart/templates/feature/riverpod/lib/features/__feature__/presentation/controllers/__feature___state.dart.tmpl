@@ -1,0 +1,19 @@
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+
+/// Loading is `AsyncLoading`; these are the settled outcomes.
+sealed class {{Feature}}State {
+  const {{Feature}}State();
+}
+
+final class {{Feature}}Loaded extends {{Feature}}State {
+  const {{Feature}}Loaded(this.items);
+
+  final List<{{Entity}}> items;
+}
+
+final class {{Feature}}Failed extends {{Feature}}State {
+  const {{Feature}}Failed(this.failure);
+
+  final AppFailure failure;
+}
