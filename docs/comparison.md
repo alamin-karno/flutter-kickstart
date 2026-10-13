@@ -16,12 +16,12 @@ feature generator. Both ship as skills that several agents can load.
 
 | Topic | flutter-kickstart (this repo) | app-team-agent-skills |
 | --- | --- | --- |
-| Entry | Interview, then `scaffold.py` | `flutter create`, then `bootstrap_app.py` |
+| Entry | Setup questions, then `scaffold.py` | `flutter create`, then `bootstrap_app.py` |
 | Base | Very Good CLI (flavors, lints, l10n built in) | Plain `flutter create`; Android + iOS flavors added by script (Ruby `xcodeproj`) |
 | State management | Bloc/Cubit **or** Riverpod, asked per project | Cubit only |
 | DI | get_it + injectable modules, or the Riverpod provider graph | get_it with hand-written modules |
 | Errors | dartz `Either`, sealed `AppFailure` from one `AppFailureConverter` | fpdart `Either`, `NetworkException` -> `Failure` with localized messages |
-| Network | `AppApiClient` on `viva_network_kit` (company package) or plain Dio, asked in the interview | Own Dio client + interceptors |
+| Network | `AppApiClient` on `viva_network_kit` (company package) or plain Dio, asked in the setup questions | Own Dio client + interceptors |
 | Navigation | go_router + `AppRoutes` path constants | go_router behind an `AppNavigator`, typed route classes with `fromParams` |
 | Extra abstractions | - | Key-value/secure storage, image resolver (SVG/PNG) |
 | Crash reporting | Console, Sentry or Crashlytics adapter generated | Contract + console implementation; backend documented |

@@ -19,7 +19,7 @@ TEMPLATES = SKILL_DIR / "templates"
 
 _PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 
-# Interview choices that swap implementations. A template named
+# Setup-question choices that swap implementations. A template named
 # `x.<choice>.ext.tmpl` is rendered only when <choice> is selected.
 STATE_CHOICES = ("bloc", "riverpod")
 NETWORK_CHOICES = ("viva", "dio")

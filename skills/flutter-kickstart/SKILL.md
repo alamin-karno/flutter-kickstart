@@ -1,11 +1,11 @@
 ---
 name: flutter-kickstart
-description: Creates a new production-ready Flutter app from a short interview. The app gets Very Good CLI flavors (dev/staging/prod), feature-first clean architecture, Bloc or Riverpod, an AppApiClient network layer (viva_network_kit or plain Dio) with typed AppFailure errors, go_router, theming, l10n, crash reporting (Sentry/Crashlytics), tests, optional GitHub Actions + Fastlane CI/CD, and an AI-agent layer (AGENTS.md + skills) that works in Claude Code, Cursor, Windsurf, Antigravity, Codex, Gemini CLI and Copilot. Also adds features to apps it created, and makes an existing scaffolded app AI-ready. Use whenever someone wants to start, create, bootstrap or set up a new Flutter app or project, add a feature/screen with all its layers to a scaffolded app, or set up AI rules/skills for one, even if they don't say "scaffold".
+description: Creates a new production-ready Flutter app from a few quick setup questions. The app gets Very Good CLI flavors (dev/staging/prod), feature-first clean architecture, Bloc or Riverpod, an AppApiClient network layer (viva_network_kit or plain Dio) with typed AppFailure errors, go_router, theming, l10n, crash reporting (Sentry/Crashlytics), tests, optional GitHub Actions + Fastlane CI/CD, and an AI-agent layer (AGENTS.md + skills) that works in Claude Code, Cursor, Windsurf, Antigravity, Codex, Gemini CLI and Copilot. Also adds features to apps it created, and makes an existing scaffolded app AI-ready. Use whenever someone wants to start, create, bootstrap or set up a new Flutter app or project, add a feature/screen with all its layers to a scaffolded app, or set up AI rules/skills for one, even if they don't say "scaffold".
 ---
 
 # Flutter Kickstart
 
-Turns "start a new Flutter app" into one interview and one deterministic
+Turns "start a new Flutter app" into a few setup questions and one deterministic
 script run. Don't hand-write the shell: `scripts/scaffold.py` generates
 everything from templates and verifies it compiles and passes its tests.
 
@@ -17,12 +17,15 @@ and Very Good CLI (the script activates it if missing).
 
 | Situation | Do |
 | --- | --- |
-| New app | Interview (step 1), then run `scaffold.py` (step 2) |
+| New app | Setup questions (step 1), then run `scaffold.py` (step 2) |
 | Add a feature to an app this skill created | `python3 tool/kickstart/add_feature.py --name <feature>` inside the app (also at `scripts/add_feature.py --root <app>`) |
 | App was scaffolded before, AI files missing/outdated | `python3 scripts/setup_ai.py --root <app>` |
 | Existing app not created by this skill | Don't run the scaffold over it. Follow its own conventions, or offer `setup_ai.py` only if the user wants this skill's AI layer |
 
-## 1. Interview
+## 1. Setup questions
+
+Call these "setup questions" when talking to the user, never an
+"interview": it should feel quick and light, not like a test.
 
 Ask one question at a time, in this order. Skip a question when an earlier
 answer makes it moot. Offer the default in brackets.
