@@ -33,6 +33,7 @@ export default defineConfig({
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: `${BASE}apple-touch-icon.png` }],
     ['meta', { name: 'theme-color', content: '#0468D7' }],
     ['meta', { name: 'author', content: 'Md. Al-Amin' }],
+    ['meta', { name: 'google-site-verification', content: 'gjJvl6jAwo8pORAiWoawGoaLl9DNNyoA9Mo73_M7AQY' }],
     [
       'meta',
       {
