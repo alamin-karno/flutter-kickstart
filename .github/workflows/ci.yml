@@ -55,6 +55,8 @@ jobs:
           done
 
   docs:
+    # Always reports a result (it's a required check), but only builds the
+    # site when something under website/ or this workflow changed.
     name: Docs build
     runs-on: ubuntu-latest
     defaults:
@@ -62,17 +64,35 @@ jobs:
         working-directory: website
     steps:
       - uses: actions/checkout@v7
-      - name: Check for the docs site
+        with:
+          fetch-depth: 0
+
+      - name: Did the docs change?
         id: site
         working-directory: .
-        run: echo "exists=$([ -f website/package.json ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          build=false
+          if [ ! -f website/package.json ]; then
+            echo "No website/ yet."
+          elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] \
+               || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            build=true
+          elif git diff --name-only "$BASE" HEAD -- website .github/workflows/ci.yml | grep -q .; then
+            build=true
+          else
+            echo "Nothing under website/ changed; skipping the build."
+          fi
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+
       - uses: actions/setup-node@v7
-        if: steps.site.outputs.exists == 'true'
+        if: steps.site.outputs.build == 'true'
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: website/package-lock.json
-      - if: steps.site.outputs.exists == 'true'
+      - if: steps.site.outputs.build == 'true'
         run: npm ci
-      - if: steps.site.outputs.exists == 'true'
+      - if: steps.site.outputs.build == 'true'
         run: npm run build
