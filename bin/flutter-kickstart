@@ -1,0 +1,235 @@
+#!/usr/bin/env python3
+"""fks (flutter-kickstart): create and grow production-ready Flutter apps.
+
+    fks create               interactive: answer a few questions, get a verified app
+    fks create --name x ...  non-interactive: flags go straight to scaffold.py
+    fks run [flavor]         flutter run --flavor <flavor> -t lib/main_<flavor>.dart
+    fks add-feature orders   add a clean-architecture feature to the app in .
+    fks doctor               check Flutter, Python, git and Very Good CLI
+    fks update               pull the latest templates and skills
+    fks uninstall            remove the skills and this command
+
+`flutter-kickstart` is the same command under its long name.
+Stdlib only; works with python3 3.8+.
+"""
+
+from __future__ import annotations
+
+import os
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+from typing import List, Optional, Sequence
+
+REPO = Path(__file__).resolve().parent.parent
+SCRIPTS = REPO / "skills" / "flutter-kickstart" / "scripts"
+sys.path.insert(0, str(SCRIPTS))
+
+from _common import (  # noqa: E402
+    CI_CHOICES,
+    DEFAULT_NETWORK,
+    NETWORK_CHOICES,
+    STATE_CHOICES,
+    flutter_cmd,
+    snake,
+    valid_package_name,
+)
+
+BOLD, DIM, CYAN, RESET = ("\033[1m", "\033[2m", "\033[36m", "\033[0m") if sys.stdout.isatty() else ("",) * 4
+
+
+def die(msg: str, code: int = 1) -> "NoReturn":  # type: ignore[name-defined]
+    print(f"error: {msg}", file=sys.stderr)
+    sys.exit(code)
+
+
+# --------------------------------------------------------------------------- #
+# Prompts
+# --------------------------------------------------------------------------- #
+
+def ask(question: str, default: str = "", validate=None, hint: str = "") -> str:
+    suffix = f" {DIM}[{default}]{RESET}" if default else ""
+    while True:
+        try:
+            raw = input(f"{CYAN}?{RESET} {BOLD}{question}{RESET}{suffix} ").strip()
+        except EOFError:
+            print()
+            die("input ended before all questions were answered; pass flags instead (fks --help).")
+        except KeyboardInterrupt:
+            print()
+            sys.exit(130)
+        value = raw or default
+        if not value:
+            print(f"  {hint or 'An answer is required.'}")
+            continue
+        if validate and not validate(value):
+            print(f"  {hint or 'That does not look right, try again.'}")
+            continue
+        return value
+
+
+def choose(question: str, options: Sequence[str], default: Optional[str] = None, labels: Optional[dict] = None) -> str:
+    labels = labels or {}
+    shown = " / ".join(f"{o}" + (f" ({labels[o]})" if o in labels else "") for o in options)
+    return ask(
+        f"{question} {DIM}{shown}{RESET}",
+        default or "",
+        validate=lambda v: v in options,
+        hint=f"Pick one of: {', '.join(options)}",
+    )
+
+
+def comma_list(value: str) -> List[str]:
+    return [v.strip() for v in value.split(",") if v.strip()]
+
+
+# --------------------------------------------------------------------------- #
+# Commands
+# --------------------------------------------------------------------------- #
+
+def cmd_create(argv: List[str]) -> int:
+    scaffold = [sys.executable, str(SCRIPTS / "scaffold.py")]
+    if any(a.startswith("--") and a not in ("--yes", "-y") for a in argv):
+        return subprocess.call([*scaffold, *argv])
+
+    quick = "--yes" in argv or "-y" in argv
+    positional = [a for a in argv if not a.startswith("-")]
+
+    print(f"\n{BOLD}Flutter Kickstart{RESET}  {DIM}Press Enter to accept the [default].{RESET}\n")
+    app_name = positional[0] if positional else ask("App display name?", "My App")
+    package = ask(
+        "Package name (snake_case)?",
+        snake(app_name),
+        validate=lambda v: valid_package_name(v),
+        hint="Use lowercase letters, digits and underscores, e.g. acme_wallet",
+    )
+    org = ask(
+        "Organization / reverse domain?",
+        "com.example",
+        validate=lambda v: re.fullmatch(r"[a-zA-Z]\w*(\.[a-zA-Z]\w*)+", v) is not None,
+        hint="Something like com.vivasoftltd",
+    )
+    state = choose("State management?", STATE_CHOICES, "bloc", {"bloc": "Cubit + get_it", "riverpod": "riverpod_generator"})
+
+    flags = ["--name", package, "--app-name", app_name, "--org", org, "--state", state]
+    if not quick:
+        network = choose("Network client?", NETWORK_CHOICES, DEFAULT_NETWORK, {"viva": "viva_network_kit", "dio": "plain Dio"})
+        platforms = ask("Platforms?", "android,ios")
+        features = ask("Starter features besides home? (comma list, blank for none)", "-")
+        locales = ask("Languages? (comma list)", "en")
+        crash = choose("Crash reporting?", ("none", "sentry", "crashlytics"), "none")
+        ci = choose("CI/CD?", CI_CHOICES, "github", {"github": "Actions + Fastlane"})
+        base_url = ask("API base URL? (blank for per-flavor placeholders)", "-")
+        flags += ["--network", network, "--platforms", platforms, "--locales", locales, "--crash", crash, "--ci", ci]
+        if features != "-":
+            flags += ["--features", ",".join(comma_list(features))]
+        if base_url != "-":
+            flags += ["--base-url", base_url]
+
+    print(f"\n{DIM}$ scaffold.py {' '.join(flags)}{RESET}\n")
+    if not quick and ask("Generate it now?", "Y").lower() not in ("y", "yes"):
+        print("Cancelled. Re-run the same choices non-interactively with:")
+        print(f"  fks create {' '.join(_quote(f) for f in flags)}")
+        return 1
+    code = subprocess.call([*scaffold, *flags])
+    if code == 0:
+        print(f"\n{BOLD}Next:{RESET}  cd {package} && fks run\n")
+    return code
+
+
+def _quote(value: str) -> str:
+    return value if re.fullmatch(r"[\w.,:/=@-]+", value) else f'"{value}"'
+
+
+def cmd_run(argv: List[str]) -> int:
+    root = Path.cwd()
+    if not (root / "pubspec.yaml").exists():
+        die("run this inside a Flutter project (no pubspec.yaml here).")
+    flavor = argv[0] if argv and not argv[0].startswith("-") else "development"
+    extra = argv[1:] if argv and not argv[0].startswith("-") else argv
+    entry = root / "lib" / f"main_{flavor}.dart"
+    if not entry.exists():
+        found = sorted(p.stem[5:] for p in (root / "lib").glob("main_*.dart"))
+        die(f"no lib/main_{flavor}.dart. Flavors here: {', '.join(found) or 'none'}")
+    cmd = [*flutter_cmd(root), "run", "--flavor", flavor, "-t", str(entry.relative_to(root)), *extra]
+    print(f"{DIM}$ {' '.join(cmd)}{RESET}")
+    return subprocess.call(cmd, cwd=root)
+
+
+def cmd_add_feature(argv: List[str]) -> int:
+    if argv and not argv[0].startswith("-"):
+        argv = ["--name", argv[0], *argv[1:]]
+    vendored = Path.cwd() / "tool" / "kickstart" / "add_feature.py"
+    script = vendored if vendored.exists() else SCRIPTS / "add_feature.py"
+    return subprocess.call([sys.executable, str(script), "--root", ".", *argv])
+
+
+def cmd_doctor(_: List[str]) -> int:
+    ok = True
+
+    def check(label: str, good: bool, detail: str, fix: str = "") -> None:
+        nonlocal ok
+        ok = ok and good
+        mark = "✓" if good else "✗"
+        print(f"  {mark} {label:16} {detail}" + (f"\n      {DIM}{fix}{RESET}" if not good and fix else ""))
+
+    print(f"{BOLD}fks doctor{RESET}")
+    check("python3", sys.version_info >= (3, 8), sys.version.split()[0], "Install Python 3.8+")
+    flutter = shutil.which("flutter") or shutil.which("fvm")
+    version = ""
+    if flutter:
+        out = subprocess.run([flutter, *(["flutter"] if flutter.endswith("fvm") else []), "--version"],
+                             capture_output=True, text=True)
+        version = (out.stdout.splitlines() or [""])[0]
+    check("flutter", bool(flutter), version or "not found", "https://docs.flutter.dev/get-started/install")
+    check("git", bool(shutil.which("git")), shutil.which("git") or "not found", "Install git")
+    vg = shutil.which("very_good")
+    print(f"  {'✓' if vg else '•'} {'very_good':16} {vg or 'not found (activated automatically on first create)'}")
+    print(f"  • {'templates':16} {REPO}")
+    return 0 if ok else 1
+
+
+def cmd_update(_: List[str]) -> int:
+    if not (REPO / ".git").exists():
+        die(f"{REPO} is not a git checkout; re-run the installer instead.")
+    code = subprocess.call(["git", "-C", str(REPO), "pull", "--ff-only"])
+    if code == 0:
+        code = subprocess.call(["bash", str(REPO / "install.sh"), "--skills-only"])
+    return code
+
+
+def cmd_uninstall(_: List[str]) -> int:
+    return subprocess.call(["bash", str(REPO / "install.sh"), "--uninstall"])
+
+
+COMMANDS = {
+    "create": cmd_create,
+    "new": cmd_create,
+    "run": cmd_run,
+    "add-feature": cmd_add_feature,
+    "feature": cmd_add_feature,
+    "doctor": cmd_doctor,
+    "update": cmd_update,
+    "uninstall": cmd_uninstall,
+}
+
+
+def main() -> int:
+    argv = sys.argv[1:]
+    if not argv or argv[0] in ("-h", "--help", "help"):
+        print(__doc__)
+        return 0
+    if argv[0] in ("-v", "--version", "version"):
+        import json
+        print(json.loads((REPO / ".claude-plugin" / "plugin.json").read_text())["version"])
+        return 0
+    command = COMMANDS.get(argv[0])
+    if not command:
+        die(f"unknown command '{argv[0]}'. Try: fks --help", 2)
+    return command(argv[1:])
+
+
+if __name__ == "__main__":
+    sys.exit(main())

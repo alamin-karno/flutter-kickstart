@@ -8,6 +8,39 @@ The interview drives a deterministic generator (`scripts/scaffold.py`), so
 every agent produces the same project. The result has to pass
 `flutter analyze` and `flutter test` before the run reports success.
 
+## Quick start
+
+```bash
+# 1. Install (once)
+curl -fsSL https://raw.githubusercontent.com/alamin-karno/flutter-kickstart/main/install.sh | bash
+
+# 2. Create an app (answer a few questions; Enter accepts the default)
+fks create
+
+# 3. Run it
+cd my_app && fks run
+```
+
+Windows (PowerShell): `irm https://raw.githubusercontent.com/alamin-karno/flutter-kickstart/main/install.ps1 | iex`
+
+`fks` is short for **f**lutter **k**ick**s**tart, the way `fvm` is short for
+Flutter Version Manager. `flutter-kickstart` works too.
+
+| Command | What it does |
+| --- | --- |
+| `fks create` | Asks the interview questions, generates the app, checks it with `flutter analyze` + `flutter test` |
+| `fks create --yes` | Asks only name, org and state management; uses defaults for everything else |
+| `fks create --name x --org com.acme --state bloc ...` | No questions; takes the same flags as `scaffold.py` |
+| `fks run [flavor]` | `flutter run --flavor <flavor> -t lib/main_<flavor>.dart` (default `development`, uses fvm if pinned) |
+| `fks add-feature orders` | Adds a feature with all layers, DI, route, l10n and tests to the app in `.` |
+| `fks doctor` | Checks Python, Flutter, git and Very Good CLI |
+| `fks update` | Pulls the latest templates and skills |
+| `fks uninstall` | Removes the command and the agent skills |
+
+The installer also puts the skills in every AI agent's global folder, so you can
+skip the CLI and just ask your agent: *"Create a new Flutter app called Acme
+Wallet for com.acme."*
+
 ## What you get
 
 | Area | Generated |
@@ -65,6 +98,21 @@ What the choices change:
 
 ## Install
 
+### One line (recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/alamin-karno/flutter-kickstart/main/install.sh | bash
+```
+
+This clones the repo into `~/.flutter-kickstart`, links `fks` and
+`flutter-kickstart` into `~/.local/bin` (it tells you if that isn't on your
+`PATH`), and links the skills for every agent. `fks update` pulls new
+versions. Override locations with `FLUTTER_KICKSTART_HOME` and
+`FLUTTER_KICKSTART_BIN`.
+
+On Windows: `irm https://raw.githubusercontent.com/alamin-karno/flutter-kickstart/main/install.ps1 | iex`
+(copies the skills and adds `fks` to your user `PATH`).
+
 ### Claude Code (plugin)
 
 ```text
@@ -72,16 +120,15 @@ What the choices change:
 /plugin install flutter-kickstart@flutter-kickstart
 ```
 
-### Every agent at once (skills)
+### From a clone
 
 ```bash
 git clone https://github.com/alamin-karno/flutter-kickstart.git ~/flutter-kickstart
-~/flutter-kickstart/install.sh          # symlinks; `git pull` updates them
-~/flutter-kickstart/install.sh --copy   # for agents that ignore symlinks
+~/flutter-kickstart/install.sh               # symlinks; `fks update` updates them
+~/flutter-kickstart/install.sh --copy        # for agents that ignore symlinks
+~/flutter-kickstart/install.sh --skills-only # skills only, no `fks` command
 ~/flutter-kickstart/install.sh --uninstall
 ```
-
-On Windows: `powershell -ExecutionPolicy Bypass -File install.ps1`.
 
 The installer links `skills/flutter-kickstart` and `skills/flutter-figma-to-flutter` into:
 
@@ -95,7 +142,7 @@ The installer links `skills/flutter-kickstart` and `skills/flutter-figma-to-flut
 | Gemini CLI | `~/.gemini/skills/`, `~/.agents/skills/` |
 
 Agents without skill support: tell the agent *"Read
-`~/flutter-kickstart/skills/flutter-kickstart/SKILL.md` and follow
+`~/.flutter-kickstart/skills/flutter-kickstart/SKILL.md` and follow
 it."*
 
 Start a **new** agent session after installing.
@@ -114,10 +161,10 @@ Ask in plain words, for example:
 - *"Add an orders feature that loads `/v1/orders`."* (inside a generated app)
 - *"Implement this Figma frame: <link>"* (needs a Figma MCP server)
 
-Or run the generator yourself:
+Or run the generator yourself (`fks create` takes the same flags):
 
 ```bash
-python3 skills/flutter-kickstart/scripts/scaffold.py \
+fks create \
   --name acme_wallet --app-name "Acme Wallet" --org com.acme \
   --platforms android,ios --state bloc --network viva \
   --base-url development=https://dev.api.acme.com \
@@ -131,7 +178,8 @@ python3 skills/flutter-kickstart/scripts/scaffold.py \
 Inside a generated app:
 
 ```bash
-python3 tool/kickstart/add_feature.py --name orders [--entity order] [--endpoint /v1/orders]
+fks run staging                                     # or: fks run (development)
+fks add-feature orders --endpoint /v1/orders        # or: python3 tool/kickstart/add_feature.py --name orders
 ./scripts/quality_gate.sh
 ```
 
@@ -170,7 +218,8 @@ skills/
     templates/ci/github                    GitHub Actions, Fastlane, deployment docs (--ci github)
     templates/ai                           AGENTS.md, rules, project skills, subagents
   flutter-figma-to-flutter/SKILL.md        design-to-code
-install.sh, install.ps1                    multi-agent installers
+bin/flutter-kickstart                      the `fks` CLI (create, run, add-feature, doctor, update)
+install.sh, install.ps1                    one-line installers: CLI + skills for every agent
 docs/                                      plan, comparison with app-team-agent-skills
 ```
 
