@@ -36,7 +36,7 @@ It uses fvm if the project has a `.fvmrc`.
 
 ## Coverage floor
 
-You set the minimum coverage in the interview (`--coverage-floor`, default
+You set the minimum coverage in the setup questions (`--coverage-floor`, default
 80). The `pr_checks` workflow fails any pull request below it. Generated code,
 l10n output and flavor entrypoints don't count toward it.
 

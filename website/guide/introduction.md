@@ -1,11 +1,11 @@
 ---
 title: Introduction
-description: What Flutter Kickstart is, who it is for, and how the interview, the generator and the AI-agent skills fit together.
+description: What Flutter Kickstart is, who it is for, and how the setup questions, the generator and the AI-agent skills fit together.
 ---
 
 # Introduction
 
-Flutter Kickstart turns *"start a new Flutter app"* into one short interview
+Flutter Kickstart turns *"start a new Flutter app"* into a few quick questions
 and gives you a codebase that is ready for real work.
 
 Most Flutter projects begin the same way. You set up flavors, pick an
@@ -22,7 +22,7 @@ Flutter Kickstart has three parts:
 | --- | --- |
 | **The `fks` command** | A small CLI. `fks create` asks the questions, `fks run` starts a flavor, `fks add-feature` grows the app. |
 | **The generator** (`scaffold.py`) | Builds the project from templates. Same answers in, same project out. |
-| **Agent skills** | Let Claude Code, Cursor, Windsurf, Antigravity, Codex, Gemini CLI or Copilot run the interview for you in plain words. |
+| **Agent skills** | Let Claude Code, Cursor, Windsurf, Antigravity, Codex, Gemini CLI or Copilot ask the setup questions for you in plain words. |
 
 You can use any one of them. They all end up running the same generator.
 

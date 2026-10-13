@@ -1,12 +1,12 @@
 ---
 layout: home
-title: "Flutter Kickstart: production-ready Flutter apps from one interview"
+title: "Flutter Kickstart: production-ready Flutter apps from a few quick questions"
 titleTemplate: false
-description: Flutter Kickstart creates a production-ready Flutter app from one short interview. Flavors, clean architecture, Bloc or Riverpod, Dio networking, go_router, tests, CI/CD and AI-agent rules, verified before you see it.
+description: Flutter Kickstart creates a production-ready Flutter app from a few quick questions. Flavors, clean architecture, Bloc or Riverpod, Dio networking, go_router, tests, CI/CD and AI-agent rules, verified before you see it.
 
 hero:
   name: Flutter Kickstart
-  text: Production-ready Flutter apps from one short interview
+  text: Production-ready Flutter apps from a few quick questions
   tagline: Answer a few questions. Get flavors, clean architecture, Bloc or Riverpod, networking, tests, CI/CD and AI-agent rules, already passing flutter analyze and flutter test.
   actions:
     - theme: brand
@@ -21,9 +21,9 @@ hero:
 
 features:
   - icon: 🧭
-    title: One interview, same result every time
-    details: The interview feeds a deterministic generator, so any agent or teammate gets the same project from the same answers.
-    link: /guide/interview
+    title: Same answers, same app, every time
+    details: Your answers feed a deterministic generator, so any agent or teammate gets the same project from the same answers.
+    link: /guide/setup-questions
     linkText: See the questions
   - icon: ✅
     title: Verified before you see it

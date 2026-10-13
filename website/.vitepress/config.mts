@@ -5,7 +5,7 @@ const BASE = '/flutter-kickstart/'
 const REPO = 'https://github.com/alamin-karno/flutter-kickstart'
 const TITLE = 'Flutter Kickstart'
 const DESCRIPTION =
-  'Create a production-ready Flutter app from one short interview: flavors, clean architecture, Bloc or Riverpod, ' +
+  'Create a production-ready Flutter app from a few quick questions: flavors, clean architecture, Bloc or Riverpod, ' +
   'Dio networking, go_router, tests, GitHub Actions + Fastlane CI/CD, and AI-agent rules for Claude Code, Cursor, ' +
   'Windsurf, Antigravity, Codex, Gemini CLI and Copilot.'
 const OG_IMAGE = `${SITE_URL}og-image.jpg`
@@ -48,7 +48,7 @@ export default defineConfig({
     ['meta', { property: 'og:image', content: OG_IMAGE }],
     ['meta', { property: 'og:image:width', content: '1200' }],
     ['meta', { property: 'og:image:height', content: '630' }],
-    ['meta', { property: 'og:image:alt', content: 'Flutter Kickstart: production-ready Flutter apps from one interview' }],
+    ['meta', { property: 'og:image:alt', content: 'Flutter Kickstart: production-ready Flutter apps from a few quick questions' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:site', content: '@alamin_karno' }],
     ['meta', { name: 'twitter:image', content: OG_IMAGE }],
@@ -59,7 +59,7 @@ export default defineConfig({
     const path = pageData.relativePath.replace(/(^|\/)index\.md$/, '$1').replace(/\.md$/, '')
     const url = `${SITE_URL}${path}`
     const isHome = path === ''
-    const title = isHome ? `${TITLE}: production-ready Flutter apps from one interview` : `${pageData.title} | ${TITLE}`
+    const title = isHome ? `${TITLE}: production-ready Flutter apps from a few quick questions` : `${pageData.title} | ${TITLE}`
     const description = pageData.description || DESCRIPTION
 
     const head: HeadConfig[] = [
@@ -122,7 +122,7 @@ export default defineConfig({
             { text: 'Introduction', link: '/guide/introduction' },
             { text: 'Installation', link: '/guide/installation' },
             { text: 'Quick start', link: '/guide/quick-start' },
-            { text: 'The interview', link: '/guide/interview' },
+            { text: 'Setup questions', link: '/guide/setup-questions' },
           ],
         },
         {

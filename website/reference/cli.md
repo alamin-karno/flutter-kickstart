@@ -10,7 +10,7 @@ Flutter Version Manager. The long name, `flutter-kickstart`, works too.
 
 | Command | What it does |
 | --- | --- |
-| `fks create` | Asks the interview questions, generates the app, checks it with `flutter analyze` + `flutter test` |
+| `fks create` | Asks the setup questions, generates the app, checks it with `flutter analyze` + `flutter test` |
 | `fks create --yes` | Asks only name, org and state management; uses defaults for everything else |
 | `fks create --name x --org com.acme --state bloc ...` | No questions; takes the same [flags](/reference/flags) as the generator |
 | `fks run [flavor]` | Runs a flavor (default `development`); uses fvm if the project pins a version |

@@ -12,7 +12,7 @@ Yes. Flutter Kickstart is open source under the
 
 ## Do I need an AI agent to use it?
 
-No. `fks create` runs the same interview in your terminal. The agent skills
+No. `fks create` asks the same setup questions in your terminal. The agent skills
 are an extra way in.
 
 ## Which AI agents are supported?

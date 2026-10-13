@@ -21,8 +21,8 @@ abstract interface class AppApiClient {
 }
 ```
 
-Features only see this interface. The implementation is picked in the
-interview:
+Features only see this interface. You pick the implementation in the
+setup questions:
 
 | Choice | Class | Notes |
 | --- | --- | --- |

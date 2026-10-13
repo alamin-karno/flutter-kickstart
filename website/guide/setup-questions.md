@@ -1,12 +1,13 @@
 ---
-title: The interview
-description: Every question Flutter Kickstart asks, the flag it maps to, its default, and what each choice changes in the generated Flutter app.
+title: Setup questions
+description: The few setup questions Flutter Kickstart asks, the flag and default for each, and what each choice changes in the generated Flutter app.
 ---
 
-# The interview
+# Setup questions
 
-The interview is the whole input. Each answer maps to one generator flag, so
-you can also skip the questions and pass flags (see
+A handful of questions is all Flutter Kickstart needs. Most have a default, so
+you can press **Enter** to accept it. Each answer maps to one generator flag,
+so you can also skip the questions and pass flags (see
 [Generator flags](/reference/flags)).
 
 Agents ask one question at a time, skip questions an earlier answer makes

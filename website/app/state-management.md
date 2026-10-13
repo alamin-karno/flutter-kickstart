@@ -5,7 +5,7 @@ description: Bloc/Cubit with get_it and injectable, or Riverpod with riverpod_ge
 
 # State management
 
-You choose **Bloc** or **Riverpod** in the interview. There is no default,
+You choose **Bloc** or **Riverpod** in the setup questions. There is no default,
 because the right answer depends on your team and your client. Everything else
 in the app (domain, data, network, routing, theme) stays the same.
 

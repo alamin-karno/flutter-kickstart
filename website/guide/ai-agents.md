@@ -10,7 +10,7 @@ skills:
 
 | Skill | What it does |
 | --- | --- |
-| `flutter-kickstart` | Runs the interview, generates the app, adds features, sets up the AI layer |
+| `flutter-kickstart` | Asks the setup questions, generates the app, adds features, sets up the AI layer |
 | `flutter-figma-to-flutter` | Turns a Figma frame into widgets that use the app's theme tokens and widgets |
 
 <ul class="fk-chips">
@@ -27,7 +27,7 @@ skills:
 
 ## What the agent does
 
-1. Asks the [interview](/guide/interview) questions one at a time.
+1. Asks the [setup questions](/guide/setup-questions) one at a time.
 2. Reads your answers back and waits for a yes.
 3. Runs the same generator as `fks create`.
 4. Tells you what was created, and what still needs a human (secrets, signing, translations).
@@ -39,7 +39,7 @@ agent produces the same app.
 
 | Situation | What happens |
 | --- | --- |
-| New app | Interview, then the generator |
+| New app | Setup questions, then the generator |
 | Add a feature to an app Flutter Kickstart created | `tool/kickstart/add_feature.py` inside the app |
 | App was created before, AI files missing or old | `setup_ai.py --root <app>` refreshes them |
 | App **not** created by Flutter Kickstart | The agent does not run the generator over it. It follows that app's own conventions. |

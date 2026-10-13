@@ -13,7 +13,7 @@ bin/flutter-kickstart                      the fks CLI
 install.sh, install.ps1                    one-line installers
 skills/
   flutter-kickstart/
-    SKILL.md                               interview + how to run the generator
+    SKILL.md                               setup questions + how to run the generator
     scripts/scaffold.py                    full project generator
     scripts/add_feature.py                 feature generator (also copied into apps)
     scripts/setup_ai.py                    cross-agent AI layer installer

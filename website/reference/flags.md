@@ -6,7 +6,7 @@ description: Every scaffold.py and fks create flag, its default, and a JSON conf
 # Generator flags
 
 `fks create` and `scaffold.py` take the same flags. Pass them to skip the
-interview, for example in scripts or CI.
+setup questions, for example in scripts or CI.
 
 ```bash
 python3 ~/.flutter-kickstart/skills/flutter-kickstart/scripts/scaffold.py --name acme_wallet --org com.acme --state bloc

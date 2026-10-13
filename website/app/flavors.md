@@ -31,7 +31,7 @@ the native steps you still need to do.
 name, API base URL, timeout and crash-reporting DSN. Each `main_<flavor>.dart`
 builds one with `AppConfig.fromEnvironment(...)`.
 
-The base URL you gave in the interview is the default for each flavor.
+The base URL you gave in the setup questions is the default for each flavor.
 Override it at build time without touching code:
 
 ```bash
