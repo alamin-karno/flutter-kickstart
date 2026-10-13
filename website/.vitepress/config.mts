@@ -1,3 +1,6 @@
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig, type HeadConfig } from 'vitepress'
 
 const SITE_URL = 'https://alamin-karno.github.io/flutter-kickstart/'
@@ -21,6 +24,31 @@ export default defineConfig({
   srcExclude: ['README.md'],
 
   sitemap: { hostname: SITE_URL },
+
+  vite: {
+    resolve: {
+      // Swap the default theme's home page for one wrapped in a <main> landmark.
+      alias: [
+        {
+          find: /^\.\/VPHome\.vue$/,
+          replacement: fileURLToPath(new URL('./theme/components/VPHomeMain.vue', import.meta.url)),
+        },
+      ],
+    },
+  },
+
+  // VitePress links vp-icons.css (about 1 KB, the GitHub icon) as a render-blocking
+  // stylesheet. Inline it into every page so first paint waits on one stylesheet, not two.
+  buildEnd({ outDir }) {
+    const css = readFileSync(join(outDir, 'vp-icons.css'), 'utf8')
+    const link = `<link rel="preload stylesheet" href="${BASE}vp-icons.css" as="style">`
+    for (const file of readdirSync(outDir, { recursive: true, encoding: 'utf8' })) {
+      if (!file.endsWith('.html')) continue
+      const path = join(outDir, file)
+      const html = readFileSync(path, 'utf8')
+      if (html.includes(link)) writeFileSync(path, html.replace(link, `<style>${css}</style>`))
+    }
+  },
 
   markdown: {
     theme: { light: 'github-light', dark: 'github-dark' },

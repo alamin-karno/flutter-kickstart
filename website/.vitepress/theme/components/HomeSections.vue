@@ -28,7 +28,7 @@ const agents = ['Claude Code', 'Cursor', 'Windsurf', 'Antigravity', 'Codex', 'Ge
     <section class="block" aria-labelledby="agents">
       <h2 id="agents">Works with the AI agent you already use</h2>
       <p class="lead">
-        Ask in plain words, like <em>“Create a new Flutter app called Acme Wallet for com.acme”</em>.
+        Ask in plain words, like <span class="prompt">“Create a new Flutter app called Acme Wallet for com.acme”</span>.
         Every generated app also ships an <code>AGENTS.md</code> and project skills, so your agent keeps following
         the same rules after day one.
       </p>
@@ -55,6 +55,8 @@ const agents = ['Claude Code', 'Cursor', 'Windsurf', 'Antigravity', 'Codex', 'Ge
 .block { max-width: 1152px; margin: 72px auto 0; }
 h2 { font-size: 28px; line-height: 1.3; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 8px; }
 .lead { color: var(--vp-c-text-2); max-width: 720px; margin: 0 0 24px; line-height: 1.7; }
+/* Upright on purpose: an italic run here would pull in the 74 KB Inter italic font just for this line. */
+.prompt { color: var(--vp-c-text-1); font-weight: 500; }
 .steps { display: grid; gap: 16px; grid-template-columns: 1fr; list-style: none; padding: 0; margin: 0; }
 @media (min-width: 768px) { .steps { grid-template-columns: repeat(3, 1fr); } }
 .step { position: relative; padding: 24px; border-radius: 12px; background: var(--vp-c-bg-soft); border: 1px solid var(--vp-c-divider); }
