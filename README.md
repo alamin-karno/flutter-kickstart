@@ -12,15 +12,56 @@ every agent produces the same project. The result has to pass
 
 | Area | Generated |
 | --- | --- |
-| Base | Very Good CLI app: native dev/staging/prod flavors, very_good_analysis, l10n |
+| Base | Very Good CLI app: native dev/staging/prod flavors, very_good_analysis, l10n in English plus any extra locales you pick |
 | Architecture | `lib/core/` contracts + `lib/features/<name>/{domain,data,presentation}` |
 | State | **Bloc/Cubit** (get_it + injectable) or **Riverpod** (riverpod_generator), asked every time |
-| Network | `AppApiClient` contract on **viva_network_kit** or **plain Dio** (asked), sealed `AppFailure`, `Either` everywhere, auth + logging interceptors |
+| Network | `AppApiClient` contract backed by **viva_network_kit** (`VivaApiClient`) or **plain Dio** (`DioApiClient`), asked every time; sealed `AppFailure`, `Either` everywhere, auth + logging interceptors |
 | Shell | go_router (`AppRoutes`), Material 3 light/dark theme + `AppColors`/`AppSpacing`/`AppRadius`, `AppLogger`, `CrashReporter` (console, Sentry or Crashlytics), per-flavor `AppConfig` with `--dart-define` overrides |
 | Features | `home` + any starter features, each with all layers, DI, route, l10n and tests |
-| Tests | Unit, bloc/controller and widget tests; `scripts/quality_gate.sh` |
+| Tests | Unit, DI, bloc/controller and widget tests (~95% line coverage), `AppApiClient` contract tests that run against either client, `scripts/quality_gate.sh` |
 | CI/CD | Optional (`--ci github\|none`): GitHub Actions `pr_checks` (coverage gate), `android` (sign, Firebase App Distribution, Play internal), `ios` (Fastlane, TestFlight/App Store), symbol upload, `docs/deployment-setup.md` |
 | AI layer | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, 10 project skills, Cursor + Windsurf rules, Copilot instructions, Claude reviewer subagents, and `tool/kickstart/add_feature.py` so the app can grow without the plugin |
+
+## The interview
+
+The skill asks these one at a time, then reads the answers back before
+generating. Each answer maps to a `scaffold.py` flag.
+
+| # | Question | Flag | Default |
+| - | --- | --- | --- |
+| 1 | App display name and description | `--app-name`, `--description` | from `--name` |
+| 2 | Package name | `--name` | snake_case of the display name |
+| 3 | Organization / reverse domain | `--org` | required |
+| 4 | Platforms | `--platforms` | `android,ios` |
+| 5 | State management: Bloc or Riverpod | `--state bloc\|riverpod` | none, always asked |
+| 6 | Network client: viva_network_kit or plain Dio | `--network viva\|dio` | `viva`, always asked |
+| 7 | API base URL per flavor | `--base-url flavor=url` (repeat) | `https://<flavor>.api.example.com` |
+| 8 | Starter features beyond home | `--features auth,orders` | none |
+| 9 | Languages besides English | `--locales en,bn` | `en` |
+| 10 | Crash reporting: none, Sentry or Crashlytics | `--crash` | `none` |
+| 11 | CI/CD: GitHub Actions + Fastlane, or none | `--ci github\|none` | `github` |
+| 12 | Minimum test coverage, in percent | `--coverage-floor` | `80` |
+| 13 | Figma file link | `--figma-url` | none |
+| 14 | AI tools the team uses | `--agents` | `all` |
+
+What the choices change:
+
+- **Network.** Feature code only depends on the `AppApiClient` contract, so
+  this swaps one class in `lib/core/network/`. Both clients share
+  `dio_factory.dart`, `AppFailureConverter` and the `JsonSerializer` API
+  (`serializer.addParser<XModel>(XModel.fromJson)`), so features,
+  repositories and `add_feature.py` are identical either way.
+  viva_network_kit also checks connectivity before each call; plain Dio
+  doesn't add the package at all.
+- **Locales.** Each extra locale gets `lib/l10n/arb/app_<locale>.arb`,
+  seeded with the English strings until it's translated, and the iOS
+  locale list is updated. `add_feature.py` adds new strings to every ARB.
+- **CI/CD.** `github` generates the workflows, Fastlane and
+  `docs/deployment-setup.md`. `none` generates no workflows (Very Good CLI's
+  included) and leaves the deployment skill out of the AI layer;
+  `scripts/quality_gate.sh` is always generated.
+- **Coverage floor.** CI enforces it, and the generator itself fails if a
+  freshly generated app falls below it.
 
 ## Install
 
@@ -125,7 +166,8 @@ skills/
     scripts/setup_ai.py                    cross-agent AI layer installer
     templates/lib, test                    core + app shell (Dart)
     templates/feature/{common,bloc,riverpod,home}
-    templates/project                      CI/CD, Fastlane, scripts, docs
+    templates/project                      always generated: quality gate, Figma token map
+    templates/ci/github                    GitHub Actions, Fastlane, deployment docs (--ci github)
     templates/ai                           AGENTS.md, rules, project skills, subagents
   flutter-figma-to-flutter/SKILL.md        design-to-code
 install.sh, install.ps1                    multi-agent installers
@@ -135,10 +177,14 @@ docs/                                      plan, comparison with app-team-agent-
 ## Changing the templates
 
 1. Edit under `skills/flutter-kickstart/templates/` or `scripts/`.
-2. Regenerate both variants and make sure they pass:
+   A template named `x.<choice>.dart.tmpl` is only generated for that
+   choice (`bloc`, `riverpod`, `viva`, `dio`) and loses the `.<choice>`
+   part, e.g. `dio_api_client.dio.dart.tmpl` -> `dio_api_client.dart`.
+2. Regenerate both sides of every choice and make sure they pass (the
+   generator runs analyze, tests and the coverage floor):
    ```bash
-   cd /tmp && python3 <repo>/skills/flutter-kickstart/scripts/scaffold.py --name demo_bloc --org com.acme --state bloc --features orders --crash sentry
-   cd /tmp && python3 <repo>/skills/flutter-kickstart/scripts/scaffold.py --name demo_rp --org com.acme --state riverpod --features orders --crash crashlytics
+   cd /tmp && python3 <repo>/skills/flutter-kickstart/scripts/scaffold.py --name demo_bloc --org com.acme --state bloc --network viva --ci github --locales en,bn --features orders --crash sentry
+   cd /tmp && python3 <repo>/skills/flutter-kickstart/scripts/scaffold.py --name demo_rp --org com.acme --state riverpod --network dio --ci none --features orders --crash crashlytics
    ```
 3. Bump `version` in `.claude-plugin/plugin.json` and run `claude plugin validate .`.
 
