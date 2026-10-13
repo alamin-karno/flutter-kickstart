@@ -7,7 +7,11 @@
   "plugins": [
     {
       "name": "flutter-kickstart",
-      "source": "./",
+      "source": {
+        "source": "github",
+        "repo": "alamin-karno/flutter-kickstart",
+        "ref": "main"
+      },
       "description": "Interview-driven Flutter app scaffolding with clean architecture, CI/CD and a cross-agent AI layer."
     }
   ]
