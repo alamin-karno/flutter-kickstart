@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Scaffold a production-ready Flutter app from the flutter-kickstart interview.
+"""Scaffold a production-ready Flutter app from the flutter-kickstart setup questions.
 
     python3 scaffold.py --name acme_wallet --app-name "Acme Wallet" \
         --org com.vivasoftltd --platforms android,ios --state bloc \

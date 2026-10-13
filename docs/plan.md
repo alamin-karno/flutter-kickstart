@@ -16,7 +16,7 @@ https://claude.ai/code/artifact/7cc4b26d-e436-4471-abf8-5336a9e648a8
 5. **Deployable** — generated CI/CD, signing, and store-deployment pipelines.
 
 ## Decided
-- State management (Bloc vs Riverpod) stays a per-project interview question,
+- State management (Bloc vs Riverpod) stays a per-project setup question,
   not a hard default — needs vary by client. (Resolved 2026-09-30.)
 
 ## Build roadmap
@@ -39,7 +39,7 @@ plugin, pilot, then team-wide rollout.
   design context, maps tokens/components via
   `templates/project/design/figma-token-map.md.tmpl`, places screens per
   `flutter-feature-architecture`, wires `flutter-navigation`, verifies per
-  `flutter-testing`); interview question 9 (optional Figma link) and step
+  `flutter-testing`); setup question 9 (optional Figma link) and step
   5 of `flutter-kickstart/SKILL.md` updated to match.
 - Phase 4 — `.github/workflows/{pr_checks,android,ios}.yml.tmpl`,
   `scripts/{quality_gate,generate_config,upload_symbols}.sh.tmpl`,
@@ -55,7 +55,7 @@ plugin, pilot, then team-wide rollout.
     Windsurf, Antigravity, Codex and Gemini CLI skill folders.
   - Templates moved inside the skill so it is self-contained when
     installed as a standalone skill.
-  - Interview now drives deterministic scripts (`scaffold.py`,
+  - Setup questions now drive deterministic scripts (`scaffold.py`,
     `add_feature.py`, `setup_ai.py`) instead of an agent copying files by
     hand, so every agent produces the same project. Both variants
     (Bloc + Sentry, Riverpod + Crashlytics) were generated end to end with
