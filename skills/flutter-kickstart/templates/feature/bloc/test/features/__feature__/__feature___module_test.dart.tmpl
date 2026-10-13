@@ -1,0 +1,17 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/di/injector.dart';
+import 'package:{{package}}/features/{{feature}}/data/datasources/{{feature}}_remote_data_source.dart';
+import 'package:{{package}}/features/{{feature}}/domain/repositories/{{feature}}_repository.dart';
+import 'package:{{package}}/features/{{feature}}/presentation/cubit/{{feature}}_cubit.dart';
+
+import '../../helpers/helpers.dart';
+
+void main() {
+  setUp(setUpTestDependencies);
+
+  test('{{Feature}}Module wires every layer of the feature', () {
+    expect(getIt<{{Feature}}RemoteDataSource>(), isA<{{Feature}}RemoteDataSource>());
+    expect(getIt<{{Feature}}Repository>(), isA<{{Feature}}Repository>());
+    expect(getIt<{{Feature}}Cubit>(), isA<{{Feature}}Cubit>());
+  });
+}

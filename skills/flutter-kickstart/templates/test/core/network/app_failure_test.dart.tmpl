@@ -1,0 +1,27 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+
+void main() {
+  group('AppFailure', () {
+    test('every subtype has a user-facing default message', () {
+      const failures = <AppFailure>[
+        NetworkFailure(),
+        ServerFailure(500),
+        UnauthorizedFailure(),
+        ParsingFailure(),
+        UnknownFailure(),
+      ];
+      for (final failure in failures) {
+        expect(failure.message, isNotEmpty);
+      }
+    });
+
+    test('ServerFailure keeps its status code', () {
+      expect(const ServerFailure(503).statusCode, 503);
+    });
+
+    test('toString carries the message, never a stack trace', () {
+      expect(const UnknownFailure('boom').toString(), 'AppFailure(boom)');
+    });
+  });
+}

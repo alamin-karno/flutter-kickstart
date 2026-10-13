@@ -1,0 +1,35 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/features/{{feature}}/data/models/{{entity}}_model.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+
+void main() {
+  group('{{Entity}}Model', () {
+    test('fromJson reads id and title', () {
+      final model = {{Entity}}Model.fromJson(const {'id': 1, 'title': 'First'});
+
+      expect(model.id, '1');
+      expect(model.title, 'First');
+    });
+
+    test('fromJson falls back to name, then to an empty title', () {
+      expect({{Entity}}Model.fromJson(const {'id': 2, 'name': 'Named'}).title, 'Named');
+      expect({{Entity}}Model.fromJson(const {'id': 3}).title, isEmpty);
+    });
+
+    test('toJson round-trips through fromJson', () {
+      const model = {{Entity}}Model(id: '1', title: 'First');
+
+      final copy = {{Entity}}Model.fromJson(model.toJson());
+
+      expect(copy.id, model.id);
+      expect(copy.title, model.title);
+    });
+
+    test('toEntity maps to the domain entity', () {
+      expect(
+        const {{Entity}}Model(id: '1', title: 'First').toEntity(),
+        const {{Entity}}(id: '1', title: 'First'),
+      );
+    });
+  });
+}

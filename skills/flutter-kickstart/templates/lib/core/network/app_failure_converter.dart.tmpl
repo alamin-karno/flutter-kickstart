@@ -1,19 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:{{package}}/core/network/app_failure.dart';
-import 'package:viva_network_kit/viva_network_kit.dart';
 
-/// Plugs [AppFailure] into `viva_network_kit` as its error type, so every
-/// `AppApiClient` call already returns `Either<AppFailure, T>` with no
-/// per-repository mapping.
-class AppFailureConverter implements NetworkErrorConverter<AppFailure> {
+/// Turns transport exceptions into [AppFailure]s. The only place that knows
+/// what a `DioException` means; every `AppApiClient` implementation
+/// delegates here, so all of them map errors the same way.
+class AppFailureConverter {
   const AppFailureConverter();
 
-  @override
   AppFailure convert(Exception exception) {
     return switch (exception) {
-      // Raised by viva_network_kit before the request is sent when the
-      // device is offline.
-      ConnectionError() => const NetworkFailure(),
       DioException() => _fromDioException(exception),
       FormatException() => const ParsingFailure(),
       _ => const UnknownFailure(),

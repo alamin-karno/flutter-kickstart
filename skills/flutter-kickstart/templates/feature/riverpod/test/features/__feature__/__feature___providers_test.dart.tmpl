@@ -1,0 +1,17 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/features/{{feature}}/domain/usecases/get_{{feature}}.dart';
+import 'package:{{package}}/features/{{feature}}/{{feature}}_providers.dart';
+
+import '../../helpers/helpers.dart';
+
+void main() {
+  setUpAll(setUpNetworkForTests);
+
+  test('{{feature}} providers wire every layer of the feature', () {
+    final container = ProviderContainer(overrides: bootstrapTestOverrides());
+    addTearDown(container.dispose);
+
+    expect(container.read(get{{Feature}}Provider), isA<Get{{Feature}}>());
+  });
+}

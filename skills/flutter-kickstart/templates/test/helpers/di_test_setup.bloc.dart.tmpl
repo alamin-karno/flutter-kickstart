@@ -1,0 +1,20 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/di/injector.dart';
+import 'package:{{package}}/core/error_reporting/console_crash_reporter.dart';
+import 'package:{{package}}/core/logging/app_logger.dart';
+
+import 'network_test_setup.dart';
+import 'test_config.dart';
+
+/// Builds the real DI graph with test instances, as `bootstrap.dart` does.
+/// Call from `setUp`; [getIt] is reset after each test.
+Future<void> setUpTestDependencies() async {
+  setUpNetworkForTests();
+  addTearDown(getIt.reset);
+  const logger = DefaultAppLogger();
+  await configureDependencies(
+    config: testConfig(),
+    crashReporter: const ConsoleCrashReporter(logger),
+    logger: logger,
+  );
+}

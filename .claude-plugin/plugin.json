@@ -2,7 +2,7 @@
   "name": "flutter-kickstart",
   "displayName": "Flutter Kickstart",
   "version": "1.0.0",
-  "description": "Interview-driven Flutter app scaffolding: Very Good CLI flavors, clean architecture (Bloc or Riverpod), viva_network_kit networking, go_router, theming, tests, GitHub Actions + Fastlane CI/CD, and an AI-agent layer that works in Claude Code, Cursor, Windsurf, Antigravity, Codex, Gemini CLI and Copilot.",
+  "description": "Interview-driven Flutter app scaffolding: Very Good CLI flavors, clean architecture (Bloc or Riverpod), viva_network_kit or plain Dio networking, go_router, theming, tests, GitHub Actions + Fastlane CI/CD, and an AI-agent layer that works in Claude Code, Cursor, Windsurf, Antigravity, Codex, Gemini CLI and Copilot.",
   "author": {
     "name": "Md. Al-Amin"
   },

@@ -14,7 +14,7 @@ import 'package:{{package}}/core/logging/app_logger.dart';
 Future<void> bootstrap({required AppConfig config}) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final logger = DefaultAppLogger(minLevel: config.isProduction ? 2 : 0);
+  final logger = DefaultAppLogger(minLevel: config.minLogLevel);
   final crashReporter = {{crash_ctor}};
   await crashReporter.init();
 
@@ -38,6 +38,7 @@ Future<void> bootstrap({required AppConfig config}) async {
       overrides: [
         appConfigProvider.overrideWithValue(config),
         crashReporterProvider.overrideWithValue(crashReporter),
+        appLoggerProvider.overrideWithValue(logger),
       ],
       child: const App(),
     ),

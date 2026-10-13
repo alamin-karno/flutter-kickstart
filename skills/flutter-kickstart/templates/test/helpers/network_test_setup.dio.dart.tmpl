@@ -1,0 +1,19 @@
+import 'package:dio/dio.dart';
+import 'package:{{package}}/core/network/app_api_client.dart';
+import 'package:{{package}}/core/network/dio_api_client.dart';
+import 'package:{{package}}/core/network/json_serializer.dart';
+
+import 'fake_http_adapter.dart';
+
+/// Plain Dio needs no platform plugins; kept so tests read the same for
+/// every network choice.
+void setUpNetworkForTests({bool online = true}) {}
+
+/// The app's [AppApiClient] implementation, talking to [adapter].
+AppApiClient buildTestApiClient(
+  FakeHttpAdapter adapter,
+  JsonSerializer serializer,
+) => DioApiClient(
+  Dio(BaseOptions(baseUrl: 'https://api.test'))..httpClientAdapter = adapter,
+  serializer,
+);

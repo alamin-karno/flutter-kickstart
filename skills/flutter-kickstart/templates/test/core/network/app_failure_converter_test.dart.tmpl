@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:{{package}}/core/network/app_failure.dart';
 import 'package:{{package}}/core/network/app_failure_converter.dart';
-import 'package:viva_network_kit/viva_network_kit.dart';
 
 void main() {
   const converter = AppFailureConverter();
@@ -17,14 +16,11 @@ void main() {
   );
 
   group('AppFailureConverter', () {
-    test('offline ConnectionError -> NetworkFailure', () {
-      final failure = converter.convert(
-        ConnectionError(
-          type: ConnectionErrorType.noInternet,
-          errorCode: 'no_internet_connection',
-        ),
+    test('connection error -> NetworkFailure', () {
+      expect(
+        converter.convert(dioError(DioExceptionType.connectionError)),
+        isA<NetworkFailure>(),
       );
-      expect(failure, isA<NetworkFailure>());
     });
 
     test('timeouts -> NetworkFailure', () {
@@ -47,6 +43,13 @@ void main() {
       );
       expect(failure, isA<ServerFailure>());
       expect((failure as ServerFailure).statusCode, 500);
+    });
+
+    test('cancel -> UnknownFailure', () {
+      expect(
+        converter.convert(dioError(DioExceptionType.cancel)),
+        isA<UnknownFailure>(),
+      );
     });
 
     test('FormatException -> ParsingFailure', () {

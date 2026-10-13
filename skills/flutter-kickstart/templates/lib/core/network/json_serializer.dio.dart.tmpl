@@ -1,0 +1,33 @@
+/// Decodes a JSON object into a model, e.g. `OrderModel.fromJson`.
+typedef JsonParser<T> = T Function(Map<String, dynamic> json);
+
+/// A request body that knows its JSON form.
+abstract interface class Serializable {
+  Map<String, dynamic> toJson();
+}
+
+/// Maps response JSON to models through parsers registered once in DI:
+/// `serializer.addParser<OrderModel>(OrderModel.fromJson)`.
+class JsonSerializer {
+  final Map<Type, JsonParser<Object?>> _parsers = {};
+
+  void addParser<T>(JsonParser<T> parser) => _parsers[T] = parser;
+
+  /// Values already of type [T] (`String`, `Map`, ...) pass through.
+  /// Throws a [FormatException] when no parser is registered for [T].
+  T decode<T>(Object? json) {
+    if (json is T) return json;
+    final parser = _parsers[T];
+    if (parser == null) {
+      throw FormatException('No JSON parser registered for $T.');
+    }
+    return parser(json! as Map<String, dynamic>) as T;
+  }
+
+  List<T> decodeList<T>(Object? json) =>
+      (json! as List<Object?>).map(decode<T>).toList();
+
+  /// [Serializable] bodies become JSON maps; anything else is sent as is.
+  Object? encode(Object? body) =>
+      body is Serializable ? body.toJson() : body;
+}

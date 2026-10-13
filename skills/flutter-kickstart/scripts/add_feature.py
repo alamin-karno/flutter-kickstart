@@ -22,6 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from _common import (  # noqa: E402
+    STATE_CHOICES,
     TEMPLATES,
     add_arb_strings,
     camel,
@@ -146,7 +147,7 @@ def generate(
         )
     register_route(root, package, feature, f"/{feature.replace('_', '-')}", f"{pascal(feature)}Screen", dry_run)
     register_parser(root, package, feature, entity, state, dry_run)
-    add_arb_strings(root / "lib/l10n/arb/app_en.arb", {f"{camel(feature)}Title": title(feature)}, dry_run)
+    add_arb_strings(root, {f"{camel(feature)}Title": title(feature)}, dry_run)
 
 
 def post_generate(root: Path) -> None:
@@ -169,7 +170,7 @@ def main() -> None:
     parser.add_argument("--name", required=True, help="Feature name, e.g. orders")
     parser.add_argument("--entity", help="Entity name (default: singular of --name)")
     parser.add_argument("--endpoint", help="GET path for the list (default: /<name>)")
-    parser.add_argument("--state", choices=["bloc", "riverpod"], help="Default: detected from pubspec.yaml")
+    parser.add_argument("--state", choices=STATE_CHOICES, help="Default: detected from pubspec.yaml")
     parser.add_argument("--force", action="store_true", help="Overwrite existing feature files")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-verify", action="store_true", help="Skip flutter analyze/test")

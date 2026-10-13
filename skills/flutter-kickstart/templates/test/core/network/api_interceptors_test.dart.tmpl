@@ -1,0 +1,71 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:{{package}}/core/logging/app_logger.dart';
+import 'package:{{package}}/core/network/api_interceptors.dart';
+
+class _MockLogger extends Mock implements AppLogger {}
+
+/// Records what the interceptor passes on instead of failing the chain.
+class _CapturingErrorHandler extends ErrorInterceptorHandler {
+  DioException? passedOn;
+
+  @override
+  void next(DioException err) => passedOn = err;
+}
+
+void main() {
+  final options = RequestOptions(path: '/x');
+
+  group('AuthInterceptor', () {
+    test('adds a bearer token when one exists', () {
+      final request = RequestOptions(path: '/x');
+
+      AuthInterceptor(() => 'abc').onRequest(request, RequestInterceptorHandler());
+
+      expect(request.headers['Authorization'], 'Bearer abc');
+    });
+
+    test('leaves the request alone without a token', () {
+      final request = RequestOptions(path: '/x');
+
+      AuthInterceptor(() => null).onRequest(request, RequestInterceptorHandler());
+
+      expect(request.headers.containsKey('Authorization'), isFalse);
+    });
+  });
+
+  group('LoggingInterceptor', () {
+    late _MockLogger logger;
+    late LoggingInterceptor interceptor;
+
+    setUp(() {
+      logger = _MockLogger();
+      interceptor = LoggingInterceptor(logger);
+    });
+
+    test('logs requests and responses at debug', () {
+      interceptor
+        ..onRequest(options, RequestInterceptorHandler())
+        ..onResponse(
+          Response<dynamic>(requestOptions: options, statusCode: 200),
+          ResponseInterceptorHandler(),
+        );
+
+      verify(() => logger.debug(any(that: startsWith('-->')))).called(1);
+      verify(() => logger.debug(any(that: startsWith('<-- 200')))).called(1);
+    });
+
+    test('logs errors at error and passes them on', () {
+      final error = DioException(requestOptions: options);
+      final handler = _CapturingErrorHandler();
+
+      interceptor.onError(error, handler);
+
+      verify(
+        () => logger.error(any(that: startsWith('x--')), error: error),
+      ).called(1);
+      expect(handler.passedOn, same(error));
+    });
+  });
+}

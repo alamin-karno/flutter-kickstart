@@ -1,0 +1,22 @@
+import 'package:dartz/dartz.dart' show Right;
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:{{package}}/core/network/app_api_client.dart';
+import 'package:{{package}}/features/{{feature}}/data/datasources/{{feature}}_remote_data_source.dart';
+import 'package:{{package}}/features/{{feature}}/data/models/{{entity}}_model.dart';
+
+class _MockClient extends Mock implements AppApiClient {}
+
+void main() {
+  test('fetch{{Feature}} GETs the list endpoint through AppApiClient', () async {
+    final client = _MockClient();
+    const items = [{{Entity}}Model(id: '1', title: 'First')];
+    when(
+      () => client.getList<{{Entity}}Model>({{Feature}}RemoteDataSourceImpl.path),
+    ).thenAnswer((_) async => const Right(items));
+
+    final result = await {{Feature}}RemoteDataSourceImpl(client).fetch{{Feature}}();
+
+    expect(result.getOrElse(() => []), items);
+  });
+}

@@ -6,6 +6,7 @@
         --base-url development=https://dev.api.acme.com \
         --base-url staging=https://stg.api.acme.com \
         --base-url production=https://api.acme.com \
+        --network viva --ci github --locales en \
         --features auth,orders --crash sentry --agents all
 
     python3 scaffold.py --config answers.json      # same keys as the flags
@@ -20,6 +21,7 @@ Stdlib only; needs Flutter (or fvm) and Very Good CLI (activated if missing).
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import re
 import shutil
@@ -33,6 +35,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import add_feature  # noqa: E402
 import setup_ai  # noqa: E402
 from _common import (  # noqa: E402
+    API_CLIENTS,
+    ARB_DIR,
+    NETWORK_LABELS,
+    CI_CHOICES,
+    DEFAULT_NETWORK,
+    NETWORK_CHOICES,
+    STATE_CHOICES,
+    TEMPLATE_LOCALE,
     TEMPLATES,
     camel,
     dart_cmd,
@@ -53,10 +63,14 @@ from _common import (  # noqa: E402
 DEFAULT_FLAVORS = ["development", "staging", "production"]
 FLAVOR_SUFFIX = {"development": " [DEV]", "staging": " [STG]", "production": ""}
 CRASH_CHOICES = ("none", "sentry", "crashlytics")
+# Not counted towards the coverage floor: generated code and entrypoints.
+# Used by the scaffold's own check and rendered into pr_checks.yml.
+COVERAGE_EXCLUDES = ("**/*.g.dart", "**/*.config.dart", "lib/l10n/gen/**", "lib/main_*.dart", "lib/bootstrap.dart")
 
 BLOC_DEPS = ["get_it", "injectable", "dev:injectable_generator"]
 RIVERPOD_DEPS = ["flutter_riverpod", "riverpod_annotation", "dev:riverpod_generator"]
-COMMON_DEPS = ["viva_network_kit", "dio", "dartz", "go_router", "meta", "dev:build_runner"]
+COMMON_DEPS = ["dio", "dartz", "go_router", "meta", "dev:build_runner"]
+NETWORK_DEPS = {"viva": ["viva_network_kit"], "dio": []}
 CRASH_DEPS = {"none": [], "sentry": ["sentry_flutter"], "crashlytics": ["firebase_core", "firebase_crashlytics"]}
 # Android minSdk each crash SDK requires (Flutter's default is lower).
 CRASH_MIN_SDK = {"none": 0, "sentry": 26, "crashlytics": 23}
@@ -79,7 +93,13 @@ def parse_args() -> Dict:
     p.add_argument("--description", default="")
     p.add_argument("--org", help="Organization / reverse domain, e.g. com.vivasoftltd")
     p.add_argument("--platforms", default="android,ios", help="Comma list: android,ios,web,macos,windows")
-    p.add_argument("--state", choices=["bloc", "riverpod"], help="State management (always ask the user)")
+    p.add_argument("--state", choices=STATE_CHOICES, help="State management (always ask the user)")
+    p.add_argument("--network", choices=NETWORK_CHOICES, default=DEFAULT_NETWORK,
+                   help="HTTP client behind AppApiClient: viva (viva_network_kit) or dio (plain Dio)")
+    p.add_argument("--ci", choices=CI_CHOICES, default="github",
+                   help="CI/CD to generate: github (Actions + Fastlane) or none")
+    p.add_argument("--locales", default=TEMPLATE_LOCALE,
+                   help=f"Comma list of supported locales; {TEMPLATE_LOCALE} is always included and is the template")
     p.add_argument("--flavors", default=",".join(DEFAULT_FLAVORS))
     p.add_argument("--base-url", action="append", default=[], metavar="FLAVOR=URL",
                    help="Per-flavor API base URL; repeat. A bare URL applies to every flavor.")
@@ -132,6 +152,11 @@ def normalize(args: Dict) -> Dict:
     platforms = [p.strip() for p in str(args["platforms"]).split(",") if p.strip()]
     features = [snake(f) for f in str(args.get("features") or "").split(",") if f.strip()]
     features = [f for f in features if f != "home"]
+    locales = [l.strip() for l in str(args.get("locales") or "").split(",") if l.strip()]
+    bad = [l for l in locales if not re.fullmatch(r"[a-z]{2,3}(_[A-Z]{2}|_[A-Z][a-z]{3})?", l)]
+    if bad:
+        fail(f"--locales {bad} are not locale codes like en, bn, pt_BR or zh_Hant.")
+    locales = [TEMPLATE_LOCALE] + [l for l in dict.fromkeys(locales) if l != TEMPLATE_LOCALE]
     return {
         **args,
         "name": name,
@@ -140,6 +165,7 @@ def normalize(args: Dict) -> Dict:
         "base_urls": urls,
         "platforms": platforms,
         "features": features,
+        "locales": locales,
         "agents": setup_ai.parse_agents(args.get("agents") or "all"),
     }
 
@@ -270,8 +296,9 @@ def remove_starter_code(root: Path, dry: bool) -> None:
 
 def write_shell(a: Dict, root: Path, values: Dict[str, str], dry: bool) -> None:
     step("Core abstractions, app shell and tests")
-    render_tree(TEMPLATES / "lib", root / "lib", values, variant=a["state"], dry_run=dry)
-    render_tree(TEMPLATES / "test", root / "test", values, dry_run=dry)
+    selected = (a["state"], a["network"])
+    render_tree(TEMPLATES / "lib", root / "lib", values, selected=selected, dry_run=dry)
+    render_tree(TEMPLATES / "test", root / "test", values, selected=selected, dry_run=dry)
     # Keep only the chosen crash adapter (console is always kept for tests).
     for _, (file, _) in CRASH_CTOR.items():
         if file not in ("console_crash_reporter.dart", CRASH_CTOR[a["crash"]][0]):
@@ -300,6 +327,34 @@ def write_shell(a: Dict, root: Path, values: Dict[str, str], dry: bool) -> None:
         )
 
 
+def write_locales(a: Dict, root: Path, dry: bool) -> None:
+    """One ARB per extra locale, seeded with the English strings so gen-l10n
+    passes until translators replace them, and the iOS locale list to match."""
+    extra = a["locales"][1:]
+    if extra:
+        step(f"Locales: {', '.join(a['locales'])}")
+    if dry:
+        return
+    template = root / ARB_DIR / f"app_{TEMPLATE_LOCALE}.arb"
+    data = json.loads(template.read_text(encoding="utf-8"))
+    for locale in extra:
+        arb = root / ARB_DIR / f"app_{locale}.arb"
+        arb.write_text(json.dumps({**data, "@@locale": locale}, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        info(f"write  {arb.relative_to(root)} (English placeholders, needs translation)")
+    plist = root / "ios/Runner/Info.plist"
+    if plist.exists():
+        text = plist.read_text(encoding="utf-8")
+        entries = "".join(f"\t\t<string>{l}</string>\n" for l in a["locales"])
+        new = re.sub(
+            r"(<key>CFBundleLocalizations</key>\s*<array>\n).*?(\s*</array>)",
+            lambda m: m.group(1) + entries.rstrip("\n") + m.group(2),
+            text,
+            count=1,
+            flags=re.DOTALL,
+        )
+        plist.write_text(new, encoding="utf-8")
+
+
 def write_home(root: Path, values: Dict[str, str], dry: bool) -> None:
     step("Home feature")
     render_tree(TEMPLATES / "feature/home", root, values, dry_run=dry)
@@ -318,7 +373,12 @@ def write_home(root: Path, values: Dict[str, str], dry: bool) -> None:
 def configure_dependencies(a: Dict, root: Path) -> None:
     step("Dependencies")
     fl = flutter_cmd(root)
-    deps = COMMON_DEPS + (BLOC_DEPS if a["state"] == "bloc" else RIVERPOD_DEPS) + CRASH_DEPS[a["crash"]]
+    deps = (
+        COMMON_DEPS
+        + NETWORK_DEPS[a["network"]]
+        + (BLOC_DEPS if a["state"] == "bloc" else RIVERPOD_DEPS)
+        + CRASH_DEPS[a["crash"]]
+    )
     run([*fl, "pub", "add", *deps], root, quiet=True)
     if a["state"] == "riverpod":
         pubspec = (root / "pubspec.yaml").read_text(encoding="utf-8")
@@ -353,8 +413,13 @@ def raise_android_min_sdk(root: Path, minimum: int) -> None:
 
 
 def write_project_files(a: Dict, root: Path, values: Dict[str, str], dry: bool) -> None:
-    step("CI/CD, scripts and docs")
+    step(f"Scripts, docs and CI/CD ({a['ci']})")
     written = render_tree(TEMPLATES / "project", root, values, dry_run=dry)
+    if a["ci"] != "none":
+        written += render_tree(TEMPLATES / "ci" / a["ci"], root, values, dry_run=dry)
+    elif not dry:
+        # "none" means no pipelines at all, including Very Good CLI's own.
+        shutil.rmtree(root / ".github/workflows", ignore_errors=True)
     if "ios" not in a["platforms"] and not dry:
         for rel in (".github/workflows/ios.yml", "ios/fastlane", "ios/Gemfile"):
             path = root / rel
@@ -406,6 +471,20 @@ def crash_doc_values(crash: str) -> Dict[str, str]:
     }
 
 
+def line_coverage(lcov: Path) -> float:
+    """Percent of lines hit in an lcov report, skipping COVERAGE_EXCLUDES."""
+    found = hit = 0
+    skip = False
+    for line in lcov.read_text(encoding="utf-8").splitlines():
+        if line.startswith("SF:"):
+            skip = any(fnmatch.fnmatch(line[3:], pattern) for pattern in COVERAGE_EXCLUDES)
+        elif not skip and line.startswith("LF:"):
+            found += int(line[3:])
+        elif not skip and line.startswith("LH:"):
+            hit += int(line[3:])
+    return hit * 100 / found if found else 100.0
+
+
 def codegen_and_verify(a: Dict, root: Path) -> None:
     step("Code generation")
     fl, da = flutter_cmd(root), dart_cmd(root)
@@ -419,7 +498,11 @@ def codegen_and_verify(a: Dict, root: Path) -> None:
         return
     step("Verify")
     run([*fl, "analyze"], root)
-    run([*fl, "test"], root)
+    run([*fl, "test", "--coverage"], root)
+    coverage = line_coverage(root / "coverage/lcov.info")
+    if coverage < a["coverage_floor"]:
+        fail(f"Line coverage {coverage:.1f}% is below the {a['coverage_floor']}% floor.")
+    info(f"line coverage {coverage:.1f}% (floor {a['coverage_floor']}%)")
 
 
 def summary(a: Dict, root: Path, ids: Dict[str, str]) -> None:
@@ -429,6 +512,9 @@ def summary(a: Dict, root: Path, ids: Dict[str, str]) -> None:
 {a['app_name']} is ready at {root}
 
   State management : {a['state']}
+  Network          : {API_CLIENTS[a['network']][1]} ({NETWORK_LABELS[a['network']]})
+  Locales          : {', '.join(a['locales'])}
+  CI/CD            : {a['ci']}
   Flavors          : {', '.join(flavors)}
   Features         : home{''.join(', ' + f for f in a['features'])}
   Crash reporting  : {a['crash']}
@@ -438,11 +524,11 @@ Run it:
   cd {root.name}
   flutter run --flavor {flavors[0]} -t lib/main_{flavors[0]}.dart
 
-Still needs a human (see docs/deployment-setup.md):
-  - GitHub secrets for signing and store upload; Android keystore; iOS team/certs
+Still needs a human{' (see docs/deployment-setup.md)' if a['ci'] == 'github' else ''}:
+  - {'GitHub secrets for signing and store upload; Android keystore; iOS team/certs' if a['ci'] == 'github' else 'CI/CD: none generated; run ./scripts/quality_gate.sh in whatever CI you use'}
   - Real API base URLs if the defaults in lib/main_<flavor>.dart are placeholders
   - {'Sentry DSN' if a['crash'] == 'sentry' else '`flutterfire configure` per flavor' if a['crash'] == 'crashlytics' else 'A crash-reporting backend (ConsoleCrashReporter for now)'}
-  - Figma link in figma-token-map.md when design work starts{'' if not a.get('figma_url') else ' (already set)'}
+{'  - Translations for ' + ', '.join(a['locales'][1:]) + ' (lib/l10n/arb/)' + chr(10) if a['locales'][1:] else ''}  - Figma link in figma-token-map.md when design work starts{'' if not a.get('figma_url') else ' (already set)'}
   - App icons and splash screen
 ==========================================================================""")
 
@@ -454,7 +540,8 @@ def main() -> None:
     dry = a["dry_run"]
 
     step("Plan")
-    for key in ("name", "app_name", "org", "platforms", "state", "flavors", "base_urls", "features", "crash", "agents"):
+    for key in ("name", "app_name", "org", "platforms", "state", "network", "flavors", "base_urls",
+                "locales", "features", "crash", "ci", "agents"):
         info(f"{key:10}: {a[key]}")
     info(f"{'project':10}: {root}")
     if dry:
@@ -475,8 +562,11 @@ def main() -> None:
         "crash": a["crash"],
         "crash_import": f"import 'package:{a['name']}/core/error_reporting/{CRASH_CTOR[a['crash']][0]}';",
         "crash_ctor": CRASH_CTOR[a["crash"]][1],
+        "api_client_import": f"import 'package:{a['name']}/core/network/{API_CLIENTS[a['network']][0]}';",
+        "api_client_class": API_CLIENTS[a["network"]][1],
         "flutter_version": flutter_version(root) if root.exists() else "3.x",
         "coverage_floor": str(a["coverage_floor"]),
+        "coverage_exclude": " ".join(COVERAGE_EXCLUDES),
         "figma_url": a.get("figma_url") or "_not set yet: add the Figma file link when design work starts_",
         **ids,
         **crash_doc_values(a["crash"]),
@@ -486,6 +576,7 @@ def main() -> None:
     if not dry:
         align_android_kotlin(root)
     write_shell(a, root, values, dry)
+    write_locales(a, root, dry)
     write_home(root, values, dry)
     write_project_files(a, root, values, dry)
     if dry:
@@ -499,6 +590,8 @@ def main() -> None:
     ai_values = setup_ai.build_values(
         root,
         state=a["state"],
+        network=a["network"],
+        ci=a["ci"],
         app_name=a["app_name"],
         description=values["description"],
         application_id=ids["android_id"],
@@ -506,7 +599,7 @@ def main() -> None:
         crash=a["crash"],
         uses_fvm=fl[0] == "fvm",
     )
-    setup_ai.install(root, ai_values, state=a["state"], agents=a["agents"], copy=a["copy_skills"])
+    setup_ai.install(root, ai_values, state=a["state"], ci=a["ci"], agents=a["agents"], copy=a["copy_skills"])
 
     codegen_and_verify(a, root)
     summary(a, root, ids)

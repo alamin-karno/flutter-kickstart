@@ -1,0 +1,21 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/config/app_config.dart';
+import 'package:{{package}}/core/di/injector.dart';
+import 'package:{{package}}/core/error_reporting/crash_reporter.dart';
+import 'package:{{package}}/core/logging/app_logger.dart';
+import 'package:{{package}}/core/network/app_api_client.dart';
+import 'package:{{package}}/core/network/json_serializer.dart';
+
+import '../../helpers/helpers.dart';
+
+void main() {
+  setUp(setUpTestDependencies);
+
+  test('configureDependencies wires the bootstrap instances and core graph', () {
+    expect(getIt<AppConfig>().apiBaseUrl, testConfig().apiBaseUrl);
+    expect(getIt<CrashReporter>(), isA<CrashReporter>());
+    expect(getIt<AppLogger>(), isA<AppLogger>());
+    expect(getIt<JsonSerializer>(), isA<JsonSerializer>());
+    expect(getIt<AppApiClient>(), isA<AppApiClient>());
+  });
+}

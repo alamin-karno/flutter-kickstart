@@ -20,8 +20,8 @@ areas the diff touches, then check each changed file:
    or inline `TextStyle` that should be a token?
 5. **Navigation**: any `Navigator.*`, raw path string, or required data
    passed through `extra`?
-6. **Network**: any `dio` / `viva_network_kit` import outside
-   `lib/core/network/` and `lib/core/di/`? Any model decoded without an
+6. **Network**: any {{network_packages}} import outside
+   `lib/core/network/`? Any model decoded without an
    `addParser` registration?
 7. **Text and logging**: user-visible strings not from `context.l10n`? Any
    `print`, or tokens/personal data in logs?

@@ -1,0 +1,42 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/network/app_api_client.dart';
+import 'package:{{package}}/core/network/json_serializer.dart';
+import 'package:{{package}}/core/network/viva_api_client.dart';
+import 'package:{{package}}/core/network/viva_failure_converter.dart';
+import 'package:viva_network_kit/viva_network_kit.dart';
+
+import 'fake_http_adapter.dart';
+
+const _check = MethodChannel('dev.fluttercommunity.plus/connectivity');
+const _changes = EventChannel('dev.fluttercommunity.plus/connectivity_status');
+
+/// `viva_network_kit` asks `connectivity_plus` for the network state before
+/// every call. Answer for it so tests run without a platform plugin.
+void setUpNetworkForTests({bool online = true}) {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+    ..setMockMethodCallHandler(
+      _check,
+      (_) async => online ? ['wifi'] : <String>[],
+    )
+    ..setMockStreamHandler(
+      _changes,
+      MockStreamHandler.inline(onListen: (_, _) {}),
+    );
+}
+
+/// The app's [AppApiClient] implementation, talking to [adapter].
+AppApiClient buildTestApiClient(
+  FakeHttpAdapter adapter,
+  JsonSerializer serializer,
+) => VivaApiClient(
+  DioNetworkCallExecutor(
+    dio: Dio(BaseOptions(baseUrl: 'https://api.test'))
+      ..httpClientAdapter = adapter,
+    dioSerializer: serializer,
+    errorConverter: const VivaFailureConverter(),
+    connectivityResult: ConnectivityResult.wifi,
+  ),
+);

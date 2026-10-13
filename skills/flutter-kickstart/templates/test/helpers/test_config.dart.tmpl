@@ -1,0 +1,9 @@
+import 'package:{{package}}/core/config/app_config.dart';
+
+/// An [AppConfig] for tests. Never reaches a real server.
+AppConfig testConfig() => AppConfig(
+  flavor: AppFlavor.values.first,
+  appName: 'Test',
+  apiBaseUrl: 'https://api.test',
+  sentryDsn: '',
+);

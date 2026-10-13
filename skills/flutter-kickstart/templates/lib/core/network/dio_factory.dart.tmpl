@@ -1,0 +1,20 @@
+import 'package:dio/dio.dart';
+
+/// Builds the one [Dio] instance every `AppApiClient` implementation sends
+/// through, so base URL, timeouts, headers and interceptors are set in a
+/// single place.
+Dio createDio({
+  required String baseUrl,
+  required Duration timeout,
+  List<Interceptor> interceptors = const [],
+}) {
+  return Dio(
+    BaseOptions(
+      baseUrl: baseUrl,
+      connectTimeout: timeout,
+      receiveTimeout: timeout,
+      sendTimeout: timeout,
+      headers: const {Headers.contentTypeHeader: Headers.jsonContentType},
+    ),
+  )..interceptors.addAll(interceptors);
+}

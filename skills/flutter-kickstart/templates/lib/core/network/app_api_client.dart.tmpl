@@ -1,18 +1,16 @@
-import 'package:dartz/dartz.dart' show Either, Left;
-import 'package:dio/dio.dart';
+import 'package:dartz/dartz.dart' show Either;
 import 'package:{{package}}/core/network/app_failure.dart';
-import 'package:{{package}}/core/network/app_failure_converter.dart';
-import 'package:viva_network_kit/viva_network_kit.dart';
 
 /// The only door to the network for feature code.
 ///
-/// Features depend on [AppApiClient], never on `viva_network_kit` or `dio`
-/// directly, so the transport stays swappable and every call is mockable.
-/// `Either` is `dartz`'s (the type `viva_network_kit` returns); don't mix in
-/// `fpdart`.
+/// Features depend on [AppApiClient], never on the HTTP package behind it,
+/// so the transport stays swappable and every call is mockable. The one
+/// implementation is chosen at scaffold time and wired in `lib/core/di/`.
+/// `Either` is `dartz`'s; don't mix in `fpdart`.
 ///
 /// Every model decoded through this client needs a parser registered once
-/// in DI: `serializer.addParser<OrderModel>(OrderModel.fromJson)`.
+/// in DI: `serializer.addParser<OrderModel>(OrderModel.fromJson)`. Request
+/// bodies that are models implement `Serializable` (`toJson()`).
 abstract interface class AppApiClient {
   /// GET returning one decoded [T].
   Future<Either<AppFailure, T>> get<T>(
@@ -49,125 +47,4 @@ abstract interface class AppApiClient {
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
   });
-}
-
-/// [AppApiClient] built on `viva_network_kit`'s `DioNetworkCallExecutor`.
-class VivaApiClient implements AppApiClient {
-  VivaApiClient(this._executor);
-
-  /// Builds the `Dio` instance and executor in one step.
-  factory VivaApiClient.create({
-    required String baseUrl,
-    required JsonSerializer serializer,
-    List<Interceptor> interceptors = const [],
-    Duration timeout = const Duration(seconds: 15),
-  }) {
-    final dio = Dio(
-      BaseOptions(
-        baseUrl: baseUrl,
-        connectTimeout: timeout,
-        receiveTimeout: timeout,
-        sendTimeout: timeout,
-        headers: const {Headers.contentTypeHeader: Headers.jsonContentType},
-      ),
-    )..interceptors.addAll(interceptors);
-
-    return VivaApiClient(
-      DioNetworkCallExecutor(
-        dio: dio,
-        dioSerializer: serializer,
-        errorConverter: const AppFailureConverter(),
-      ),
-    );
-  }
-
-  final DioNetworkCallExecutor _executor;
-
-  @override
-  Future<Either<AppFailure, T>> get<T>(
-    String path, {
-    Map<String, dynamic>? queryParameters,
-  }) => _guard(
-    () => _executor.get<AppFailure, T, T>(
-      path,
-      queryParameters: queryParameters,
-    ),
-  );
-
-  @override
-  Future<Either<AppFailure, List<T>>> getList<T>(
-    String path, {
-    Map<String, dynamic>? queryParameters,
-  }) => _guard(
-    () => _executor.get<AppFailure, List<T>, T>(
-      path,
-      queryParameters: queryParameters,
-    ),
-  );
-
-  @override
-  Future<Either<AppFailure, T>> post<T>(
-    String path, {
-    Object? body,
-    Map<String, dynamic>? queryParameters,
-  }) => _guard(
-    () => _executor.post<AppFailure, T, T>(
-      path,
-      body: body,
-      queryParameters: queryParameters,
-    ),
-  );
-
-  @override
-  Future<Either<AppFailure, T>> put<T>(
-    String path, {
-    Map<String, dynamic>? body,
-    Map<String, dynamic>? queryParameters,
-  }) => _guard(
-    () => _executor.put<AppFailure, T, T>(
-      path,
-      body: body,
-      queryParameters: queryParameters,
-    ),
-  );
-
-  @override
-  Future<Either<AppFailure, T>> patch<T>(
-    String path, {
-    Map<String, dynamic>? body,
-    Map<String, dynamic>? queryParameters,
-  }) => _guard(
-    () => _executor.patch<AppFailure, T, T>(
-      path,
-      body: body,
-      queryParameters: queryParameters,
-    ),
-  );
-
-  @override
-  Future<Either<AppFailure, T>> delete<T>(
-    String path, {
-    Map<String, dynamic>? body,
-    Map<String, dynamic>? queryParameters,
-  }) => _guard(
-    () => _executor.delete<AppFailure, T, T>(
-      path,
-      body: body,
-      queryParameters: queryParameters,
-    ),
-  );
-
-  /// `viva_network_kit` only catches `Exception`s. A missing parser or a
-  /// changed JSON shape throws a `TypeError` instead, which would otherwise
-  /// escape the data layer, so it is turned into a [ParsingFailure] here.
-  Future<Either<AppFailure, R>> _guard<R>(
-    Future<Either<AppFailure, R>> Function() call,
-  ) async {
-    try {
-      return await call();
-    // ignore: avoid_catching_errors, decoding bugs must not cross layers.
-    } on TypeError {
-      return const Left(ParsingFailure());
-    }
-  }
 }

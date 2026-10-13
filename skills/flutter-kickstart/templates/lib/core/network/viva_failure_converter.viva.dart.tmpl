@@ -1,0 +1,16 @@
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/core/network/app_failure_converter.dart';
+import 'package:viva_network_kit/viva_network_kit.dart';
+
+/// Plugs [AppFailureConverter] into `viva_network_kit` as its error type and
+/// adds the one case only the kit raises: offline before sending.
+class VivaFailureConverter implements NetworkErrorConverter<AppFailure> {
+  const VivaFailureConverter([this._base = const AppFailureConverter()]);
+
+  final AppFailureConverter _base;
+
+  @override
+  AppFailure convert(Exception exception) => exception is ConnectionError
+      ? const NetworkFailure()
+      : _base.convert(exception);
+}

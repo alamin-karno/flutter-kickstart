@@ -1,3 +1,5 @@
+import 'package:{{package}}/core/logging/app_logger.dart';
+
 /// Build flavors. One value per `lib/main_<flavor>.dart` entrypoint and
 /// per native flavor (Android productFlavor / iOS scheme).
 enum AppFlavor {
@@ -17,6 +19,7 @@ class AppConfig {
     required this.appName,
     required this.apiBaseUrl,
     required this.sentryDsn,
+    this.apiTimeout = defaultApiTimeout,
   });
 
   /// Builds a config for [flavor], letting `--dart-define` values override
@@ -36,13 +39,21 @@ class AppConfig {
     );
   }
 
+  static const defaultApiTimeout = Duration(seconds: 15);
+
   final AppFlavor flavor;
   final String appName;
   final String apiBaseUrl;
+
+  /// Connect, send and receive timeout for every API call.
+  final Duration apiTimeout;
 
   /// Empty unless passed with `--dart-define=SENTRY_DSN=...`. Never commit
   /// a DSN or key to source control.
   final String sentryDsn;
 
   bool get isProduction => flavor.name == 'production';
+
+  /// Production keeps warnings and errors only.
+  LogLevel get minLogLevel => isProduction ? LogLevel.warning : LogLevel.debug;
 }

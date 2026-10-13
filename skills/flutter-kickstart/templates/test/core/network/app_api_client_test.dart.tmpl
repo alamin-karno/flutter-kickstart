@@ -1,0 +1,97 @@
+import 'package:dartz/dartz.dart' show Either;
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/network/app_api_client.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/core/network/json_serializer.dart';
+
+import '../../helpers/helpers.dart';
+
+class _Item implements Serializable {
+  const _Item(this.id);
+
+  factory _Item.fromJson(Map<String, dynamic> json) =>
+      _Item(json['id'] as int);
+
+  final int id;
+
+  @override
+  Map<String, dynamic> toJson() => {'id': id};
+}
+
+/// Contract tests: they run against whichever [AppApiClient]
+/// implementation this app was generated with, so swapping it can't
+/// silently change behaviour.
+void main() {
+  setUpAll(setUpNetworkForTests);
+
+  AppApiClient clientFor(FakeHttpAdapter adapter) => buildTestApiClient(
+    adapter,
+    JsonSerializer()..addParser<_Item>(_Item.fromJson),
+  );
+
+  group('AppApiClient', () {
+    test('getList decodes every element', () async {
+      final adapter = FakeHttpAdapter(body: '[{"id":1},{"id":2}]');
+
+      final result = await clientFor(adapter).getList<_Item>('/items');
+
+      expect(result.getOrElse(() => []).map((i) => i.id), [1, 2]);
+      expect(adapter.lastRequest?.method, 'GET');
+      expect(adapter.lastRequest?.uri.toString(), 'https://api.test/items');
+    });
+
+    test('get decodes one object and forwards query parameters', () async {
+      final adapter = FakeHttpAdapter(body: '{"id":7}');
+
+      final result = await clientFor(
+        adapter,
+      ).get<_Item>('/items/7', queryParameters: {'expand': 'all'});
+
+      expect(result.fold((_) => null, (item) => item.id), 7);
+      expect(adapter.lastRequest?.queryParameters, {'expand': 'all'});
+    });
+
+    for (final (verb, send) in <(String, _SendCall)>[
+      ('POST', (c) => c.post<_Item>('/items', body: const _Item(1))),
+      ('PUT', (c) => c.put<_Item>('/items/1', body: {'id': 1})),
+      ('PATCH', (c) => c.patch<_Item>('/items/1', body: {'id': 1})),
+      ('DELETE', (c) => c.delete<_Item>('/items/1')),
+    ]) {
+      test('$verb sends the right verb and decodes the reply', () async {
+        final adapter = FakeHttpAdapter(body: '{"id":1}');
+
+        final result = await send(clientFor(adapter));
+
+        expect(adapter.lastRequest?.method, verb);
+        expect(result.fold((_) => null, (item) => item.id), 1);
+      });
+    }
+
+    test('maps a 401 to UnauthorizedFailure', () async {
+      final result = await clientFor(
+        FakeHttpAdapter(status: 401),
+      ).get<_Item>('/me');
+
+      expect(result.fold((f) => f, (_) => null), isA<UnauthorizedFailure>());
+    });
+
+    test('maps a 500 to ServerFailure', () async {
+      final result = await clientFor(
+        FakeHttpAdapter(status: 500),
+      ).get<_Item>('/items/1');
+
+      expect(result.fold((f) => f, (_) => null), isA<ServerFailure>());
+    });
+
+    test('maps an unexpected JSON shape to ParsingFailure', () async {
+      final result = await clientFor(
+        FakeHttpAdapter(body: '{"id":"not-an-int"}'),
+      ).get<_Item>('/items/1');
+
+      expect(result.fold((f) => f, (_) => null), isA<ParsingFailure>());
+    });
+  });
+}
+
+typedef _SendCall =
+    Future<Either<AppFailure, _Item>> Function(AppApiClient client);

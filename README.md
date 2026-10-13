@@ -15,11 +15,11 @@ every agent produces the same project. The result has to pass
 | Base | Very Good CLI app: native dev/staging/prod flavors, very_good_analysis, l10n |
 | Architecture | `lib/core/` contracts + `lib/features/<name>/{domain,data,presentation}` |
 | State | **Bloc/Cubit** (get_it + injectable) or **Riverpod** (riverpod_generator), asked every time |
-| Network | `AppApiClient` on `viva_network_kit`, sealed `AppFailure`, `Either` everywhere, auth + logging interceptors |
+| Network | `AppApiClient` contract on **viva_network_kit** or **plain Dio** (asked), sealed `AppFailure`, `Either` everywhere, auth + logging interceptors |
 | Shell | go_router (`AppRoutes`), Material 3 light/dark theme + `AppColors`/`AppSpacing`/`AppRadius`, `AppLogger`, `CrashReporter` (console, Sentry or Crashlytics), per-flavor `AppConfig` with `--dart-define` overrides |
 | Features | `home` + any starter features, each with all layers, DI, route, l10n and tests |
 | Tests | Unit, bloc/controller and widget tests; `scripts/quality_gate.sh` |
-| CI/CD | GitHub Actions `pr_checks` (coverage gate), `android` (sign, Firebase App Distribution, Play internal), `ios` (Fastlane, TestFlight/App Store), symbol upload, `docs/deployment-setup.md` |
+| CI/CD | Optional (`--ci github\|none`): GitHub Actions `pr_checks` (coverage gate), `android` (sign, Firebase App Distribution, Play internal), `ios` (Fastlane, TestFlight/App Store), symbol upload, `docs/deployment-setup.md` |
 | AI layer | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, 10 project skills, Cursor + Windsurf rules, Copilot instructions, Claude reviewer subagents, and `tool/kickstart/add_feature.py` so the app can grow without the plugin |
 
 ## Install
@@ -78,11 +78,11 @@ Or run the generator yourself:
 ```bash
 python3 skills/flutter-kickstart/scripts/scaffold.py \
   --name acme_wallet --app-name "Acme Wallet" --org com.acme \
-  --platforms android,ios --state bloc \
+  --platforms android,ios --state bloc --network viva \
   --base-url development=https://dev.api.acme.com \
   --base-url staging=https://stg.api.acme.com \
   --base-url production=https://api.acme.com \
-  --features auth,orders --crash sentry --agents all
+  --features auth,orders --locales en,bn --crash sentry --ci github --agents all
 ```
 
 `--config answers.json` takes the same keys. `--dry-run` prints the plan.

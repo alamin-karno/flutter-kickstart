@@ -9,6 +9,7 @@ import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart
 import 'package:{{package}}/features/{{feature}}/domain/usecases/get_{{feature}}.dart';
 import 'package:{{package}}/features/{{feature}}/{{feature}}_providers.dart';
 import 'package:{{package}}/features/{{feature}}/presentation/screens/{{feature}}_screen.dart';
+import 'package:{{package}}/l10n/l10n.dart';
 
 import '../../../../helpers/helpers.dart';
 
@@ -29,11 +30,23 @@ void main() {
   group('{{Feature}}Screen', () {
     testWidgets('shows the items once loaded', (tester) async {
       when(() => get{{Feature}}()).thenAnswer(
-        (_) async => const Right([{{Entity}}(id: '1', title: 'First')]),
+        (_) async => const Right([
+          {{Entity}}(id: '1', title: 'First'),
+          {{Entity}}(id: '2', title: 'Second'),
+        ]),
       );
       await pumpScreen(tester);
       await tester.pumpAndSettle();
       expect(find.text('First'), findsOneWidget);
+      expect(find.text('Second'), findsOneWidget);
+    });
+
+    testWidgets('shows the empty message for an empty list', (tester) async {
+      when(() => get{{Feature}}()).thenAnswer((_) async => const Right([]));
+      await pumpScreen(tester);
+      await tester.pumpAndSettle();
+      final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+      expect(find.text(l10n.emptyList), findsOneWidget);
     });
 
     testWidgets('shows FailureView and retries on tap', (tester) async {

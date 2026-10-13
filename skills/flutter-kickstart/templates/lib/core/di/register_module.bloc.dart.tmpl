@@ -6,16 +6,14 @@ import 'package:{{package}}/core/config/app_config.dart';
 import 'package:{{package}}/core/logging/app_logger.dart';
 import 'package:{{package}}/core/network/api_interceptors.dart';
 import 'package:{{package}}/core/network/app_api_client.dart';
-import 'package:viva_network_kit/viva_network_kit.dart';
+{{api_client_import}}
+import 'package:{{package}}/core/network/json_serializer.dart';
 // scaffold:model-imports
 
 /// Third-party instances that can't carry an annotation themselves.
+/// `AppConfig`, `CrashReporter` and `AppLogger` come from `bootstrap.dart`.
 @module
 abstract class RegisterModule {
-  @lazySingleton
-  AppLogger logger(AppConfig config) =>
-      DefaultAppLogger(minLevel: config.isProduction ? 2 : 0);
-
   /// One `addParser` per model decoded through [AppApiClient].
   @lazySingleton
   JsonSerializer get jsonSerializer {
@@ -29,8 +27,9 @@ abstract class RegisterModule {
     AppConfig config,
     JsonSerializer serializer,
     AppLogger logger,
-  ) => VivaApiClient.create(
+  ) => {{api_client_class}}.create(
     baseUrl: config.apiBaseUrl,
+    timeout: config.apiTimeout,
     serializer: serializer,
     interceptors: [
       // Replace `() => null` with a read from secure storage once auth exists.

@@ -37,5 +37,4 @@ the visual change is intended.
 ./scripts/quality_gate.sh     # dart format check, analyze, tests + coverage
 ```
 
-Fix whatever it reports. "Looks done" is not done. The coverage floor is
-enforced in `.github/workflows/pr_checks.yml`.
+Fix whatever it reports. "Looks done" is not done. {{coverage_enforcement}}

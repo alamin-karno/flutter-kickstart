@@ -3,13 +3,15 @@ import 'package:injectable/injectable.dart';
 import 'package:{{package}}/core/config/app_config.dart';
 import 'package:{{package}}/core/di/injector.config.dart';
 import 'package:{{package}}/core/error_reporting/crash_reporter.dart';
+import 'package:{{package}}/core/logging/app_logger.dart';
 
 /// Global service locator. Only DI code, the router and screen-level
 /// `BlocProvider(create: ...)` call it; everything else takes its
 /// dependencies through the constructor.
 final GetIt getIt = GetIt.instance;
 
-/// Registers [config] and [crashReporter], then everything annotated with
+/// Registers the instances built in `bootstrap.dart` ([config],
+/// [crashReporter], [logger]), then everything annotated with
 /// `@injectable` / `@lazySingleton` (run
 /// `dart run build_runner build --delete-conflicting-outputs` after adding
 /// one).
@@ -17,9 +19,11 @@ final GetIt getIt = GetIt.instance;
 Future<void> configureDependencies({
   required AppConfig config,
   required CrashReporter crashReporter,
+  required AppLogger logger,
 }) async {
   getIt
     ..registerSingleton<AppConfig>(config)
     ..registerSingleton<CrashReporter>(crashReporter)
+    ..registerSingleton<AppLogger>(logger)
     ..init();
 }

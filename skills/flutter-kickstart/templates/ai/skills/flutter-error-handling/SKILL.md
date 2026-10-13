@@ -17,11 +17,11 @@ don't throw a custom exception instead.
 ## Conversion happens in exactly two places
 
 1. `AppFailureConverter` (`lib/core/network/app_failure_converter.dart`)
-   is plugged into `viva_network_kit`, so every `AppApiClient` call already
-   returns `Either<AppFailure, T>`: offline -> `NetworkFailure`, 401 ->
-   `UnauthorizedFailure`, other HTTP errors -> `ServerFailure`.
-   `VivaApiClient` also turns decoding `TypeError`s (missing
-   `addParser`, changed JSON) into `ParsingFailure`.
+   is used by `{{api_client_class}}`, so every `AppApiClient` call already
+   returns `Either<AppFailure, T>`: offline or timeout -> `NetworkFailure`,
+   401 -> `UnauthorizedFailure`, other HTTP errors -> `ServerFailure`.
+   Decoding errors (missing `addParser`, changed JSON) become
+   `ParsingFailure`.
 2. A data source doing non-HTTP work (cache, platform channel) wraps that
    work in its own `try/catch` and returns `Left(...)`.
 

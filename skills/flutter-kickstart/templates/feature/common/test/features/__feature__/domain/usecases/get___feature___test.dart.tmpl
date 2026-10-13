@@ -1,0 +1,19 @@
+import 'package:dartz/dartz.dart' show Left;
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+import 'package:{{package}}/features/{{feature}}/domain/repositories/{{feature}}_repository.dart';
+import 'package:{{package}}/features/{{feature}}/domain/usecases/get_{{feature}}.dart';
+
+class _MockRepository extends Mock implements {{Feature}}Repository {}
+
+void main() {
+  test('Get{{Feature}} returns what the repository returns', () async {
+    final repository = _MockRepository();
+    const failure = Left<AppFailure, List<{{Entity}}>>(NetworkFailure());
+    when(repository.get{{Feature}}).thenAnswer((_) async => failure);
+
+    expect(await Get{{Feature}}(repository)(), failure);
+  });
+}

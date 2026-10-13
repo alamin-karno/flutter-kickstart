@@ -1,0 +1,16 @@
+import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:{{package}}/core/di/providers.dart';
+import 'package:{{package}}/core/error_reporting/console_crash_reporter.dart';
+import 'package:{{package}}/core/logging/app_logger.dart';
+
+import 'test_config.dart';
+
+/// The overrides `bootstrap.dart` applies, with test instances.
+List<Override> bootstrapTestOverrides() {
+  const logger = DefaultAppLogger();
+  return [
+    appConfigProvider.overrideWithValue(testConfig()),
+    crashReporterProvider.overrideWithValue(const ConsoleCrashReporter(logger)),
+    appLoggerProvider.overrideWithValue(logger),
+  ];
+}

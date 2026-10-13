@@ -1,0 +1,50 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/network/json_serializer.dart';
+
+class _Item implements Serializable {
+  const _Item(this.id);
+
+  factory _Item.fromJson(Map<String, dynamic> json) =>
+      _Item(json['id'] as int);
+
+  final int id;
+
+  @override
+  Map<String, dynamic> toJson() => {'id': id};
+}
+
+void main() {
+  late JsonSerializer serializer;
+
+  setUp(() => serializer = JsonSerializer()..addParser<_Item>(_Item.fromJson));
+
+  group('JsonSerializer', () {
+    test('decodes an object with its registered parser', () {
+      expect(serializer.decode<_Item>({'id': 1}).id, 1);
+    });
+
+    test('decodes a list element by element', () {
+      final items = serializer.decodeList<_Item>([
+        {'id': 1},
+        {'id': 2},
+      ]);
+      expect(items.map((i) => i.id), [1, 2]);
+    });
+
+    test('passes values already of the requested type through', () {
+      expect(serializer.decode<String>('ok'), 'ok');
+    });
+
+    test('throws FormatException when no parser is registered', () {
+      expect(
+        () => serializer.decode<DateTime>({'at': 'now'}),
+        throwsFormatException,
+      );
+    });
+
+    test('encodes Serializable bodies and leaves others alone', () {
+      expect(serializer.encode(const _Item(3)), {'id': 3});
+      expect(serializer.encode('raw'), 'raw');
+    });
+  });
+}

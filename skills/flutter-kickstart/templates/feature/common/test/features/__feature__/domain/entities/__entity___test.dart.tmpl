@@ -1,0 +1,15 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart';
+
+void main() {
+  group('{{Entity}}', () {
+    test('is equal by value', () {
+      const a = {{Entity}}(id: '1', title: 'First');
+      const b = {{Entity}}(id: '1', title: 'First');
+
+      expect(a, b);
+      expect(a.hashCode, b.hashCode);
+      expect(a, isNot(const {{Entity}}(id: '2', title: 'First')));
+    });
+  });
+}

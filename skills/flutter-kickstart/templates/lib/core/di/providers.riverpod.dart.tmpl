@@ -7,13 +7,14 @@ import 'package:{{package}}/core/error_reporting/crash_reporter.dart';
 import 'package:{{package}}/core/logging/app_logger.dart';
 import 'package:{{package}}/core/network/api_interceptors.dart';
 import 'package:{{package}}/core/network/app_api_client.dart';
-import 'package:viva_network_kit/viva_network_kit.dart';
+{{api_client_import}}
+import 'package:{{package}}/core/network/json_serializer.dart';
 // scaffold:model-imports
 
 /// The provider graph is the DI graph: no separate service locator.
 ///
-/// [appConfigProvider] and [crashReporterProvider] are overridden in
-/// `bootstrap.dart` with the real per-flavor instances.
+/// [appConfigProvider], [crashReporterProvider] and [appLoggerProvider] are
+/// overridden in `bootstrap.dart` with the instances built there.
 final appConfigProvider = Provider<AppConfig>(
   (ref) => throw UnimplementedError('Overridden in bootstrap()'),
 );
@@ -22,10 +23,9 @@ final crashReporterProvider = Provider<CrashReporter>(
   (ref) => throw UnimplementedError('Overridden in bootstrap()'),
 );
 
-final appLoggerProvider = Provider<AppLogger>((ref) {
-  final config = ref.watch(appConfigProvider);
-  return DefaultAppLogger(minLevel: config.isProduction ? 2 : 0);
-});
+final appLoggerProvider = Provider<AppLogger>(
+  (ref) => throw UnimplementedError('Overridden in bootstrap()'),
+);
 
 /// One `addParser` per model decoded through [AppApiClient].
 final jsonSerializerProvider = Provider<JsonSerializer>((ref) {
@@ -35,8 +35,10 @@ final jsonSerializerProvider = Provider<JsonSerializer>((ref) {
 });
 
 final appApiClientProvider = Provider<AppApiClient>((ref) {
-  return VivaApiClient.create(
-    baseUrl: ref.watch(appConfigProvider).apiBaseUrl,
+  final config = ref.watch(appConfigProvider);
+  return {{api_client_class}}.create(
+    baseUrl: config.apiBaseUrl,
+    timeout: config.apiTimeout,
     serializer: ref.watch(jsonSerializerProvider),
     interceptors: [
       // Replace `() => null` with a read from secure storage once auth exists.

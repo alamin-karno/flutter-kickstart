@@ -30,4 +30,4 @@ jobs:
         with:
           path: coverage/lcov.info
           min_coverage: {{coverage_floor}}
-          exclude: "**/*.g.dart **/*.config.dart lib/l10n/gen/** lib/main_*.dart lib/bootstrap.dart"
+          exclude: "{{coverage_exclude}}"

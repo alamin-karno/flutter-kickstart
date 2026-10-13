@@ -1,5 +1,29 @@
 import 'dart:developer' as developer;
 
+/// Severity, lowest first. [value] is the `dart:developer` /
+/// `package:logging` level.
+enum LogLevel {
+  debug(500),
+  info(800),
+  warning(900),
+  error(1000);
+
+  LogLevel(this.value);
+
+  final int value;
+}
+
+/// Where log records go. Defaults to `dart:developer`'s `log`; tests pass a
+/// recorder.
+typedef LogSink =
+    void Function(
+      String message, {
+      String name,
+      int level,
+      Object? error,
+      StackTrace? stackTrace,
+    });
+
 /// Call sites depend on this, never on a concrete logging package.
 abstract interface class AppLogger {
   void debug(String message);
@@ -11,34 +35,44 @@ abstract interface class AppLogger {
 /// Default implementation on `dart:developer`. Swap the body for the
 /// `logger` package (or any other) without touching a call site.
 class DefaultAppLogger implements AppLogger {
-  const DefaultAppLogger({this.minLevel = 0});
+  const DefaultAppLogger({
+    this.minLevel = LogLevel.debug,
+    this.sink = developer.log,
+  });
 
-  /// 0 = debug, 1 = info, 2 = warning, 3 = error. Production builds pass 2.
-  final int minLevel;
+  /// Messages below this level are dropped. Production builds pass
+  /// [LogLevel.warning] (see `AppConfig.minLogLevel`).
+  final LogLevel minLevel;
 
-  @override
-  void debug(String message) => _log(0, 'DEBUG', message);
-
-  @override
-  void info(String message) => _log(1, 'INFO', message);
-
-  @override
-  void warning(String message) => _log(2, 'WARN', message);
+  /// Receives every record at or above [minLevel].
+  final LogSink sink;
 
   @override
-  void error(String message, {Object? error, StackTrace? stackTrace}) {
-    if (minLevel > 3) return;
-    developer.log(
+  void debug(String message) => _log(LogLevel.debug, message);
+
+  @override
+  void info(String message) => _log(LogLevel.info, message);
+
+  @override
+  void warning(String message) => _log(LogLevel.warning, message);
+
+  @override
+  void error(String message, {Object? error, StackTrace? stackTrace}) =>
+      _log(LogLevel.error, message, error: error, stackTrace: stackTrace);
+
+  void _log(
+    LogLevel level,
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
+    if (level.index < minLevel.index) return;
+    sink(
       message,
-      name: 'ERROR',
-      level: 1000,
+      name: level.name.toUpperCase(),
+      level: level.value,
       error: error,
       stackTrace: stackTrace,
     );
-  }
-
-  void _log(int level, String name, String message) {
-    if (level < minLevel) return;
-    developer.log(message, name: name, level: 500 + level * 100);
   }
 }

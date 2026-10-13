@@ -1,0 +1,32 @@
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
+
+/// Answers every request with [status] and [body] instead of touching the
+/// network, and records the last request for assertions.
+class FakeHttpAdapter implements HttpClientAdapter {
+  FakeHttpAdapter({this.status = 200, this.body = '{}'});
+
+  final int status;
+  final String body;
+  RequestOptions? lastRequest;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    lastRequest = options;
+    return ResponseBody.fromString(
+      body,
+      status,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}

@@ -1,0 +1,41 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/theming/app_theme_extension.dart';
+
+import '../../helpers/helpers.dart';
+
+void main() {
+  group('AppColors', () {
+    test('copyWith replaces only the given colours', () {
+      final copy = AppColors.light.copyWith(brand: Colors.pink);
+
+      expect(copy.brand, Colors.pink);
+      expect(copy.success, AppColors.light.success);
+      expect(copy.warning, AppColors.light.warning);
+      expect(copy.info, AppColors.light.info);
+    });
+
+    test('lerp blends towards the other palette', () {
+      expect(AppColors.light.lerp(AppColors.dark, 0).brand, AppColors.light.brand);
+      expect(AppColors.light.lerp(AppColors.dark, 1).info, AppColors.dark.info);
+      expect(AppColors.light.lerp(null, 0.5), same(AppColors.light));
+    });
+  });
+
+  testWidgets('context extensions read the app theme', (tester) async {
+    late BuildContext captured;
+    await tester.pumpApp(
+      Builder(
+        builder: (context) {
+          captured = context;
+          return const SizedBox();
+        },
+      ),
+    );
+
+    expect(captured.theme, isA<ThemeData>());
+    expect(captured.colors, captured.theme.colorScheme);
+    expect(captured.textTheme, captured.theme.textTheme);
+    expect(captured.appColors, isA<AppColors>());
+  });
+}

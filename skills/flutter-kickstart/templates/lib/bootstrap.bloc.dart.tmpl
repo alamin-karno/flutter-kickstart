@@ -32,7 +32,7 @@ class AppBlocObserver extends BlocObserver {
 Future<void> bootstrap({required AppConfig config}) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final logger = DefaultAppLogger(minLevel: config.isProduction ? 2 : 0);
+  final logger = DefaultAppLogger(minLevel: config.minLogLevel);
   final crashReporter = {{crash_ctor}};
   await crashReporter.init();
 
@@ -53,7 +53,11 @@ Future<void> bootstrap({required AppConfig config}) async {
 
   Bloc.observer = AppBlocObserver(logger);
 
-  await configureDependencies(config: config, crashReporter: crashReporter);
+  await configureDependencies(
+    config: config,
+    crashReporter: crashReporter,
+    logger: logger,
+  );
 
   runApp(const App());
 }

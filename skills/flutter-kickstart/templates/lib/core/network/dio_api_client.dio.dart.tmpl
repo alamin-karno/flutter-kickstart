@@ -1,0 +1,131 @@
+import 'package:dartz/dartz.dart' show Either, Left, Right;
+import 'package:dio/dio.dart';
+import 'package:{{package}}/core/network/app_api_client.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/core/network/app_failure_converter.dart';
+import 'package:{{package}}/core/network/dio_factory.dart';
+import 'package:{{package}}/core/network/json_serializer.dart';
+
+/// [AppApiClient] on plain `dio`. Every verb goes through [_send], so
+/// encoding, decoding and error mapping live in one place.
+class DioApiClient implements AppApiClient {
+  DioApiClient(
+    this._dio,
+    this._serializer, [
+    this._converter = const AppFailureConverter(),
+  ]);
+
+  /// Builds the `Dio` instance and client in one step.
+  factory DioApiClient.create({
+    required String baseUrl,
+    required JsonSerializer serializer,
+    required Duration timeout,
+    List<Interceptor> interceptors = const [],
+  }) {
+    return DioApiClient(
+      createDio(baseUrl: baseUrl, timeout: timeout, interceptors: interceptors),
+      serializer,
+    );
+  }
+
+  final Dio _dio;
+  final JsonSerializer _serializer;
+  final AppFailureConverter _converter;
+
+  @override
+  Future<Either<AppFailure, T>> get<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) => _send(
+    'GET',
+    path,
+    queryParameters: queryParameters,
+    decode: _serializer.decode<T>,
+  );
+
+  @override
+  Future<Either<AppFailure, List<T>>> getList<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) => _send(
+    'GET',
+    path,
+    queryParameters: queryParameters,
+    decode: _serializer.decodeList<T>,
+  );
+
+  @override
+  Future<Either<AppFailure, T>> post<T>(
+    String path, {
+    Object? body,
+    Map<String, dynamic>? queryParameters,
+  }) => _send(
+    'POST',
+    path,
+    body: body,
+    queryParameters: queryParameters,
+    decode: _serializer.decode<T>,
+  );
+
+  @override
+  Future<Either<AppFailure, T>> put<T>(
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, dynamic>? queryParameters,
+  }) => _send(
+    'PUT',
+    path,
+    body: body,
+    queryParameters: queryParameters,
+    decode: _serializer.decode<T>,
+  );
+
+  @override
+  Future<Either<AppFailure, T>> patch<T>(
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, dynamic>? queryParameters,
+  }) => _send(
+    'PATCH',
+    path,
+    body: body,
+    queryParameters: queryParameters,
+    decode: _serializer.decode<T>,
+  );
+
+  @override
+  Future<Either<AppFailure, T>> delete<T>(
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, dynamic>? queryParameters,
+  }) => _send(
+    'DELETE',
+    path,
+    body: body,
+    queryParameters: queryParameters,
+    decode: _serializer.decode<T>,
+  );
+
+  Future<Either<AppFailure, R>> _send<R>(
+    String method,
+    String path, {
+    required R Function(Object? json) decode,
+    Object? body,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    try {
+      final response = await _dio.request<Object?>(
+        path,
+        data: _serializer.encode(body),
+        queryParameters: queryParameters,
+        options: Options(method: method),
+      );
+      return Right(decode(response.data));
+    } on Exception catch (e) {
+      return Left(_converter.convert(e));
+    // ignore: avoid_catching_errors, decoding bugs must not cross layers.
+    } on TypeError {
+      return const Left(ParsingFailure());
+    }
+  }
+}

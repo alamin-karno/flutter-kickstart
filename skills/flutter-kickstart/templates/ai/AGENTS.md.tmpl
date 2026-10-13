@@ -3,7 +3,8 @@
 {{description}}
 
 Flutter app, package `{{package}}`, application id `{{application_id}}`.
-State management: **{{state_label}}**. Crash reporting: **{{crash_label}}**.
+State management: **{{state_label}}**. Network: **{{network_label}}**.
+Crash reporting: **{{crash_label}}**.
 Flavors: {{flavor_list}}.
 
 This file is the single source of AI-agent instructions for this repo. It is
@@ -35,7 +36,7 @@ lib/
     di/                {{di_summary}}
     error_reporting/   CrashReporter + adapter
     logging/           AppLogger
-    network/           AppApiClient (viva_network_kit), AppFailure, converter, interceptors
+    network/           AppApiClient contract + {{api_client_class}}, AppFailure, converter, JsonSerializer, interceptors
     routing/           AppRoutes + buildAppRouter (go_router)
     theming/           AppTheme, AppColors, AppSpacing, AppRadius, context extensions
     widgets/           shared widgets (FailureView)
@@ -53,8 +54,9 @@ features; shared pieces move to `core/`.
 
 ## Non-negotiables
 
-1. Network only through `AppApiClient`. Never import `dio` or
-   `viva_network_kit` outside `lib/core/network/` and `lib/core/di/`.
+1. Network only through `AppApiClient`. Never import {{network_packages}}
+   outside `lib/core/network/`. Models decoded by the client get one
+   `serializer.addParser<XModel>(XModel.fromJson)` in `lib/core/di/`.
 2. Errors are values: data sources and repositories return
    `Either<AppFailure, T>` (dartz). Nothing throws across layers.
 3. {{state_rule}}
@@ -80,8 +82,7 @@ features; shared pieces move to `core/`.
 | `flutter-navigation` | adding a route or navigating |
 | `flutter-theming` | any styling; implementing a design |
 | `flutter-testing` | writing tests; the done-check after any change |
-| `flutter-deployment` | CI workflows, signing, Fastlane, releases |
-| `flutter-architecture-review` | reviewing a diff against these rules |
+{{deployment_skill_row}}| `flutter-architecture-review` | reviewing a diff against these rules |
 | `flutter-test-review` | checking a diff has the required tests |
 | `flutter-figma-to-flutter` | implementing a Figma frame (see `figma-token-map.md`) |
 

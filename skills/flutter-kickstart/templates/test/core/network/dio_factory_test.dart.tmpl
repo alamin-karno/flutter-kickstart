@@ -1,0 +1,23 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/network/dio_factory.dart';
+
+void main() {
+  test('createDio applies base URL, timeouts, JSON and interceptors', () {
+    final interceptor = InterceptorsWrapper();
+    const timeout = Duration(seconds: 3);
+
+    final dio = createDio(
+      baseUrl: 'https://api.test',
+      timeout: timeout,
+      interceptors: [interceptor],
+    );
+
+    expect(dio.options.baseUrl, 'https://api.test');
+    expect(dio.options.connectTimeout, timeout);
+    expect(dio.options.receiveTimeout, timeout);
+    expect(dio.options.sendTimeout, timeout);
+    expect(dio.options.contentType, Headers.jsonContentType);
+    expect(dio.interceptors, contains(interceptor));
+  });
+}

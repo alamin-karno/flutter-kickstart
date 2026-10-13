@@ -1,0 +1,28 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/di/providers.dart';
+import 'package:{{package}}/core/network/app_api_client.dart';
+import 'package:{{package}}/core/network/json_serializer.dart';
+
+import '../../helpers/helpers.dart';
+
+void main() {
+  setUpAll(setUpNetworkForTests);
+
+  test('the core graph builds from the bootstrap overrides', () {
+    final container = ProviderContainer(overrides: bootstrapTestOverrides());
+    addTearDown(container.dispose);
+
+    expect(container.read(jsonSerializerProvider), isA<JsonSerializer>());
+    expect(container.read(appApiClientProvider), isA<AppApiClient>());
+  });
+
+  test('bootstrap-only providers fail loudly when not overridden', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    expect(() => container.read(appConfigProvider), throwsA(anything));
+    expect(() => container.read(crashReporterProvider), throwsA(anything));
+    expect(() => container.read(appLoggerProvider), throwsA(anything));
+  });
+}

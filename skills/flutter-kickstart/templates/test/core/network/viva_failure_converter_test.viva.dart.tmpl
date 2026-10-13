@@ -1,0 +1,33 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/core/network/viva_failure_converter.dart';
+import 'package:viva_network_kit/viva_network_kit.dart';
+
+void main() {
+  const converter = VivaFailureConverter();
+
+  group('VivaFailureConverter', () {
+    test('offline ConnectionError -> NetworkFailure', () {
+      final failure = converter.convert(
+        ConnectionError(
+          type: ConnectionErrorType.noInternet,
+          errorCode: 'no_internet_connection',
+        ),
+      );
+      expect(failure, isA<NetworkFailure>());
+    });
+
+    test('delegates everything else to AppFailureConverter', () {
+      final options = RequestOptions(path: '/x');
+      final failure = converter.convert(
+        DioException(
+          requestOptions: options,
+          type: DioExceptionType.badResponse,
+          response: Response<dynamic>(requestOptions: options, statusCode: 401),
+        ),
+      );
+      expect(failure, isA<UnauthorizedFailure>());
+    });
+  });
+}

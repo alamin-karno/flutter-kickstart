@@ -1,0 +1,20 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/network/app_failure.dart';
+import 'package:{{package}}/core/network/json_serializer.dart';
+
+import '../../helpers/helpers.dart';
+
+void main() {
+  test('VivaApiClient fails fast with NetworkFailure when offline', () async {
+    setUpNetworkForTests(online: false);
+    final adapter = FakeHttpAdapter();
+
+    final result = await buildTestApiClient(
+      adapter,
+      JsonSerializer(),
+    ).get<Map<String, dynamic>>('/items');
+
+    expect(result.fold((f) => f, (_) => null), isA<NetworkFailure>());
+    expect(adapter.lastRequest, isNull, reason: 'nothing is sent offline');
+  });
+}

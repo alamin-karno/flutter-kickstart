@@ -1,0 +1,42 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/logging/app_logger.dart';
+
+void main() {
+  late List<(String, String, int)> records;
+
+  void sink(
+    String message, {
+    String name = '',
+    int level = 0,
+    Object? error,
+    StackTrace? stackTrace,
+  }) => records.add((name, message, level));
+
+  setUp(() => records = []);
+
+  group('DefaultAppLogger', () {
+    test('writes every level by default', () {
+      DefaultAppLogger(sink: sink)
+        ..debug('d')
+        ..info('i')
+        ..warning('w')
+        ..error('e', error: StateError('x'));
+
+      expect(records, [
+        ('DEBUG', 'd', LogLevel.debug.value),
+        ('INFO', 'i', LogLevel.info.value),
+        ('WARNING', 'w', LogLevel.warning.value),
+        ('ERROR', 'e', LogLevel.error.value),
+      ]);
+    });
+
+    test('drops messages below minLevel', () {
+      DefaultAppLogger(minLevel: LogLevel.warning, sink: sink)
+        ..debug('d')
+        ..info('i')
+        ..warning('w');
+
+      expect(records.map((r) => r.$2), ['w']);
+    });
+  });
+}

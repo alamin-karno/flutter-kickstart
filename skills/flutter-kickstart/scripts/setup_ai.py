@@ -33,8 +33,14 @@ from typing import Dict, Iterable, List
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from _common import (  # noqa: E402
+    API_CLIENTS,
+    CI_CHOICES,
+    NETWORK_CHOICES,
+    NETWORK_LABELS,
     SKILL_DIR,
+    STATE_CHOICES,
     TEMPLATES,
+    detect_network,
     detect_state_management,
     fail,
     info,
@@ -50,6 +56,29 @@ AGENTS = ("claude", "cursor", "windsurf", "antigravity", "codex", "gemini", "cop
 # Agents that need a mirror of .agents/skills in their own folder.
 MIRRORS = {"claude": ".claude/skills", "cursor": ".cursor/skills", "windsurf": ".windsurf/skills"}
 CRASH_LABELS = {"none": "console only (no backend yet)", "sentry": "Sentry", "crashlytics": "Firebase Crashlytics"}
+# Skills that only make sense when CI/CD was generated.
+CI_ONLY_SKILLS = {"flutter-deployment"}
+
+
+def network_values(network: str) -> Dict[str, str]:
+    packages = "`dio` or `viva_network_kit`" if network == "viva" else "`dio`"
+    return {
+        "network_label": NETWORK_LABELS[network],
+        "network_packages": packages,
+        "api_client_class": API_CLIENTS[network][1],
+    }
+
+
+def ci_values(ci: str) -> Dict[str, str]:
+    if ci == "none":
+        return {
+            "deployment_skill_row": "",
+            "coverage_enforcement": "No CI was generated; enforce the coverage floor in your CI.",
+        }
+    return {
+        "deployment_skill_row": "| `flutter-deployment` | CI workflows, signing, Fastlane, releases |\n",
+        "coverage_enforcement": "The coverage floor is enforced in `.github/workflows/pr_checks.yml`.",
+    }
 
 
 def state_values(state: str) -> Dict[str, str]:
@@ -107,8 +136,8 @@ def state_values(state: str) -> Dict[str, str]:
     }
 
 
-def build_values(root: Path, *, state: str, app_name: str, description: str, application_id: str,
-                 flavors: Iterable[str], crash: str, uses_fvm: bool) -> Dict[str, str]:
+def build_values(root: Path, *, state: str, network: str, ci: str, app_name: str, description: str,
+                 application_id: str, flavors: Iterable[str], crash: str, uses_fvm: bool) -> Dict[str, str]:
     values = {
         "package": read_package_name(root),
         "app_name": app_name,
@@ -120,6 +149,8 @@ def build_values(root: Path, *, state: str, app_name: str, description: str, app
         "dart": "fvm dart" if uses_fvm else "dart",
     }
     values.update(state_values(state))
+    values.update(network_values(network))
+    values.update(ci_values(ci))
     return values
 
 
@@ -133,7 +164,7 @@ def render_file(src: Path, dest: Path, values: Dict[str, str]) -> None:
     write(dest, render(src.read_text(encoding="utf-8"), values))
 
 
-def install_skills(root: Path, values: Dict[str, str], state: str) -> List[str]:
+def install_skills(root: Path, values: Dict[str, str], state: str, ci: str) -> List[str]:
     """Render project skills into .agents/skills (canonical)."""
     canonical = root / ".agents/skills"
     names: List[str] = []
@@ -141,6 +172,9 @@ def install_skills(root: Path, values: Dict[str, str], state: str) -> List[str]:
         if not skill_dir.is_dir():
             continue
         name = skill_dir.name
+        if ci == "none" and name in CI_ONLY_SKILLS:
+            shutil.rmtree(canonical / name, ignore_errors=True)
+            continue
         if name.startswith("flutter-state-management-"):
             if not name.endswith(state):
                 continue
@@ -199,13 +233,13 @@ def vendor_feature_generator(root: Path) -> None:
     info("vendor tool/kickstart/add_feature.py (+ templates/feature)")
 
 
-def install(root: Path, values: Dict[str, str], *, state: str, agents: Iterable[str], copy: bool) -> None:
+def install(root: Path, values: Dict[str, str], *, state: str, ci: str, agents: Iterable[str], copy: bool) -> None:
     agents = set(agents)
     ai = TEMPLATES / "ai"
     step(f"AI agent layer for: {', '.join(sorted(agents))}")
 
     render_file(ai / "AGENTS.md.tmpl", root / "AGENTS.md", values)
-    names = install_skills(root, values, state)
+    names = install_skills(root, values, state, ci)
     vendor_feature_generator(root)
 
     for agent, rel in MIRRORS.items():
@@ -243,7 +277,9 @@ def main() -> None:
     parser.add_argument("--app-name", help="Display name (default: from package name)")
     parser.add_argument("--description", default="")
     parser.add_argument("--application-id", default="")
-    parser.add_argument("--state", choices=["bloc", "riverpod"])
+    parser.add_argument("--state", choices=STATE_CHOICES, help="Default: detected from pubspec.yaml")
+    parser.add_argument("--network", choices=NETWORK_CHOICES, help="Default: detected from pubspec.yaml")
+    parser.add_argument("--ci", choices=CI_CHOICES, help="Default: github if .github/workflows/pr_checks.yml exists")
     parser.add_argument("--crash", default="none", choices=sorted(CRASH_LABELS))
     parser.add_argument("--flavors", default="development,staging,production")
     args = parser.parse_args()
@@ -251,9 +287,12 @@ def main() -> None:
     root = Path(args.root).resolve()
     package = read_package_name(root)
     state = args.state or detect_state_management(root)
+    ci = args.ci or ("github" if (root / ".github/workflows/pr_checks.yml").exists() else "none")
     values = build_values(
         root,
         state=state,
+        network=args.network or detect_network(root),
+        ci=ci,
         app_name=args.app_name or title(package),
         description=args.description,
         application_id=args.application_id or package,
@@ -261,7 +300,7 @@ def main() -> None:
         crash=args.crash,
         uses_fvm=(root / ".fvmrc").exists(),
     )
-    install(root, values, state=state, agents=parse_agents(args.agents), copy=args.copy or os.name == "nt")
+    install(root, values, state=state, ci=ci, agents=parse_agents(args.agents), copy=args.copy or os.name == "nt")
     if not (root / "lib/core/routing/app_router.dart").exists():
         warn("This project was not created by flutter-kickstart; add_feature.py expects its lib/core layout.")
     print("\nAI layer installed. Start a new agent session so it picks up the skills.")
