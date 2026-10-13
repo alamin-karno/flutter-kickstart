@@ -12,6 +12,8 @@ $ErrorActionPreference = "Stop"
 $Home_ = $env:USERPROFILE
 $RepoUrl = if ($env:FLUTTER_KICKSTART_REPO) { $env:FLUTTER_KICKSTART_REPO } else { "https://github.com/alamin-karno/flutter-kickstart.git" }
 $InstallDir = if ($env:FLUTTER_KICKSTART_HOME) { $env:FLUTTER_KICKSTART_HOME } else { "$Home_\.flutter-kickstart" }
+# `main` holds released versions only; day-to-day work lands on `dev`.
+$Branch = if ($env:FLUTTER_KICKSTART_BRANCH) { $env:FLUTTER_KICKSTART_BRANCH } else { "main" }
 
 # Piped through `irm | iex` (no script path) or run outside a checkout: fetch the repo, then run its installer.
 $Self = $MyInvocation.MyCommand.Path
@@ -19,10 +21,10 @@ if (-not $Self -or -not (Test-Path (Join-Path (Split-Path -Parent $Self) "skills
   if (-not (Get-Command git -ErrorAction SilentlyContinue)) { throw "git is required" }
   if (Test-Path "$InstallDir\.git") {
     Write-Host "Updating $InstallDir"
-    git -C $InstallDir pull --ff-only --quiet
+    git -C $InstallDir pull --ff-only --quiet origin $Branch
   } else {
     Write-Host "Cloning flutter-kickstart into $InstallDir"
-    git clone --depth 1 --quiet $RepoUrl $InstallDir
+    git clone --depth 1 --branch $Branch --quiet $RepoUrl $InstallDir
   }
   & powershell -ExecutionPolicy Bypass -File "$InstallDir\install.ps1" @PSBoundParameters
   return

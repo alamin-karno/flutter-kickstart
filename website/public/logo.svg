@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Flutter Kickstart">
+  <defs>
+    <linearGradient id="fk-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#02569B"/>
+      <stop offset="1" stop-color="#13B9FD"/>
+    </linearGradient>
+    <linearGradient id="fk-flame" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFC24D"/>
+      <stop offset="1" stop-color="#FF6A2B"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="url(#fk-bg)"/>
+  <g transform="rotate(45 32 32) translate(0 2)">
+    <path d="M27 45 L37 45 L32 57 Z" fill="url(#fk-flame)"/>
+    <path d="M24 35 L16 45 L24 44 Z" fill="#B9ECFF"/>
+    <path d="M40 35 L48 45 L40 44 Z" fill="#B9ECFF"/>
+    <path d="M32 8 C40 14 41 25 41 34 L41 45 L23 45 L23 34 C23 25 24 14 32 8 Z" fill="#FFFFFF"/>
+    <circle cx="32" cy="27" r="5" fill="#0468D7"/>
+    <circle cx="32" cy="27" r="2.2" fill="#B9ECFF"/>
+  </g>
+</svg>

@@ -12,12 +12,14 @@
 #   ./install.sh --uninstall
 #
 # Claude Code users can instead install it as a plugin:
-#   /plugin marketplace add alamin-karno/flutter-kickstart
+#   /plugin marketplace add alamin-karno/flutter-kickstart#main
 #   /plugin install flutter-kickstart@flutter-kickstart
 set -euo pipefail
 
 REPO_URL="${FLUTTER_KICKSTART_REPO:-https://github.com/alamin-karno/flutter-kickstart.git}"
 INSTALL_DIR="${FLUTTER_KICKSTART_HOME:-$HOME/.flutter-kickstart}"
+# `main` holds released versions only; day-to-day work lands on `dev`.
+BRANCH="${FLUTTER_KICKSTART_BRANCH:-main}"
 BIN_DIR="${FLUTTER_KICKSTART_BIN:-$HOME/.local/bin}"
 
 # Piped through `curl | bash` (or run from outside a checkout): fetch the repo, then run its installer.
@@ -26,10 +28,10 @@ if [[ -z "$SELF" || ! -f "$SELF" || ! -d "$(dirname "$SELF")/skills/flutter-kick
   command -v git >/dev/null || { echo "error: git is required" >&2; exit 1; }
   if [[ -d "$INSTALL_DIR/.git" ]]; then
     echo "Updating $INSTALL_DIR"
-    git -C "$INSTALL_DIR" pull --ff-only --quiet
+    git -C "$INSTALL_DIR" pull --ff-only --quiet origin "$BRANCH"
   else
     echo "Cloning flutter-kickstart into $INSTALL_DIR"
-    git clone --depth 1 --quiet "$REPO_URL" "$INSTALL_DIR"
+    git clone --depth 1 --branch "$BRANCH" --quiet "$REPO_URL" "$INSTALL_DIR"
   fi
   exec bash "$INSTALL_DIR/install.sh" "$@"
 fi

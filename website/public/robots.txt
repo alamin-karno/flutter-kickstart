@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://alamin-karno.github.io/flutter-kickstart/sitemap.xml
