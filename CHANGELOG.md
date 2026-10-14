@@ -6,37 +6,20 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-15
+
+First public release.
+
 ### Added
-- Documentation site at https://alamin-karno.github.io/flutter-kickstart/ with a landing page, guides, generated-app docs, CLI and flag reference, troubleshooting, FAQ and contributing docs.
-- CI for scripts, manifests, a generator dry-run for every state/network pair and the docs build.
-- Automatic docs deployment from `dev`, and tag-driven GitHub Releases.
+- A generator driven by a few setup questions, on Very Good CLI: development, staging and production flavors, feature-first clean architecture, Bloc or Riverpod, an `AppApiClient` network layer on viva_network_kit or plain Dio, go_router, theming, l10n with optional extra locales, crash reporting and tests. Generated apps pass `flutter analyze` and `flutter test` and start at about 95% line coverage.
+- Optional CI/CD: GitHub Actions workflows and Fastlane lanes.
+- Cross-agent AI layer in every generated app: `AGENTS.md`, project skills, Cursor and Windsurf rules, Copilot instructions and reviewer subagents, plus the `flutter-figma-to-flutter` skill.
+- The `fks` command (alias `flutter-kickstart`): `create`, `run`, `add-feature`, `doctor`, `update`, `uninstall`.
+- One-line installers for macOS/Linux (`install.sh`) and Windows (`install.ps1`) that set up the command and link the skills for every agent. Set `FLUTTER_KICKSTART_BRANCH` to a tag such as `v1.0.0` to install that exact release.
+- Claude Code plugin and marketplace manifests.
+- Documentation site at https://alamin-karno.github.io/flutter-kickstart/ with guides, generated-app docs, CLI and flag reference, troubleshooting, FAQ and contributing docs.
+- CI for scripts, manifests, a generator dry-run for every state/network pair and the docs build; automatic docs deployment; tag-driven GitHub Releases.
 - Contributing guide, Code of Conduct, security policy, issue and pull request templates.
 
-### Changed
-- Git Flow: `dev` is the default branch; `main` holds released versions only.
-- The installers and the Claude Code marketplace entry install from `main`, so users only get released versions. Set `FLUTTER_KICKSTART_BRANCH` to try another branch.
-- New README with a banner, quick start and links to the docs.
-
-## [1.1.0] - 2026-10-13
-
-### Added
-- The `fks` command (alias `flutter-kickstart`): `create`, `run`, `add-feature`, `doctor`, `update`, `uninstall`.
-- One-line installers for macOS/Linux (`install.sh`) and Windows (`install.ps1`) that set up the command and the skills for every agent.
-- Setup questions for the network client (viva_network_kit or plain Dio), CI/CD (GitHub Actions or none) and extra locales.
-
-### Changed
-- Generated apps start at about 95% line coverage.
-
-### Fixed
-- `unnecessary_ignore` lint warning on newer Flutter versions.
-
-## [1.0.0] - 2026-10-13
-
-### Added
-- First version: a generator (`scaffold.py`) driven by a few setup questions, on Very Good CLI with flavors, clean architecture, Bloc or Riverpod, `AppApiClient` networking, go_router, theming, l10n, crash reporting, tests and GitHub Actions + Fastlane CI/CD.
-- Cross-agent AI layer (`AGENTS.md`, project skills, Cursor/Windsurf rules, Copilot instructions, reviewer subagents) and the `flutter-figma-to-flutter` skill.
-- Claude Code plugin and marketplace manifests.
-
-[Unreleased]: https://github.com/alamin-karno/flutter-kickstart/compare/v1.1.0...HEAD
-[1.1.0]: https://github.com/alamin-karno/flutter-kickstart/releases/tag/v1.1.0
-[1.0.0]: https://github.com/alamin-karno/flutter-kickstart/commit/9f2408e
+[Unreleased]: https://github.com/alamin-karno/flutter-kickstart/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/alamin-karno/flutter-kickstart/releases/tag/v1.0.0

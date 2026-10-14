@@ -13,6 +13,7 @@ $Home_ = $env:USERPROFILE
 $RepoUrl = if ($env:FLUTTER_KICKSTART_REPO) { $env:FLUTTER_KICKSTART_REPO } else { "https://github.com/alamin-karno/flutter-kickstart.git" }
 $InstallDir = if ($env:FLUTTER_KICKSTART_HOME) { $env:FLUTTER_KICKSTART_HOME } else { "$Home_\.flutter-kickstart" }
 # `main` holds released versions only; day-to-day work lands on `dev`.
+# Set FLUTTER_KICKSTART_BRANCH to a release tag (e.g. v1.0.0) to pin that version.
 $Branch = if ($env:FLUTTER_KICKSTART_BRANCH) { $env:FLUTTER_KICKSTART_BRANCH } else { "main" }
 
 # Piped through `irm | iex` (no script path) or run outside a checkout: fetch the repo, then run its installer.

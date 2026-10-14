@@ -19,6 +19,7 @@ set -euo pipefail
 REPO_URL="${FLUTTER_KICKSTART_REPO:-https://github.com/alamin-karno/flutter-kickstart.git}"
 INSTALL_DIR="${FLUTTER_KICKSTART_HOME:-$HOME/.flutter-kickstart}"
 # `main` holds released versions only; day-to-day work lands on `dev`.
+# Set FLUTTER_KICKSTART_BRANCH to a release tag (e.g. v1.0.0) to pin that version.
 BRANCH="${FLUTTER_KICKSTART_BRANCH:-main}"
 BIN_DIR="${FLUTTER_KICKSTART_BIN:-$HOME/.local/bin}"
 

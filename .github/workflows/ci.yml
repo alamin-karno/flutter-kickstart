@@ -79,7 +79,7 @@ jobs:
           elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] \
                || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
             build=true
-          elif git diff --name-only "$BASE" HEAD -- website .github/workflows/ci.yml | grep -q .; then
+          elif git diff --name-only "$BASE" HEAD -- website .claude-plugin/plugin.json .github/workflows/ci.yml | grep -q .; then
             build=true
           else
             echo "Nothing under website/ changed; skipping the build."

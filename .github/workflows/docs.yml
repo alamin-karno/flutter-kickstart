@@ -6,6 +6,7 @@ on:
     branches: [dev]
     paths:
       - "website/**"
+      - ".claude-plugin/plugin.json"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 

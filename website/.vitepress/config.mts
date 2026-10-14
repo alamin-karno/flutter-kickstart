@@ -12,6 +12,9 @@ const DESCRIPTION =
   'Dio networking, go_router, tests, GitHub Actions + Fastlane CI/CD, and AI-agent rules for Claude Code, Cursor, ' +
   'Windsurf, Antigravity, Codex, Gemini CLI and Copilot.'
 const OG_IMAGE = `${SITE_URL}og-image.jpg`
+const VERSION: string = JSON.parse(
+  readFileSync(fileURLToPath(new URL('../../.claude-plugin/plugin.json', import.meta.url)), 'utf8'),
+).version
 
 export default defineConfig({
   lang: 'en-US',
@@ -134,10 +137,11 @@ export default defineConfig({
       { text: 'Reference', link: '/reference/cli', activeMatch: '/reference/' },
       { text: 'Contributing', link: '/contributing/', activeMatch: '/contributing/' },
       {
-        text: 'Links',
+        text: `v${VERSION}`,
         items: [
+          { text: 'Release notes', link: `${REPO}/releases/tag/v${VERSION}` },
+          { text: 'All releases', link: `${REPO}/releases` },
           { text: 'Changelog', link: `${REPO}/blob/main/CHANGELOG.md` },
-          { text: 'Releases', link: `${REPO}/releases` },
           { text: 'Report an issue', link: `${REPO}/issues/new/choose` },
         ],
       },

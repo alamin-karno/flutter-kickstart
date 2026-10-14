@@ -36,12 +36,37 @@ jobs:
           awk -v v="${{ steps.version.outputs.version }}" '
             $0 ~ "^## \\[" v "\\]" { found = 1; next }
             found && /^## \[/ { exit }
+            found && /^\[[^]]+\]: / { next }
             found { print }
           ' CHANGELOG.md > notes.md
           if [ ! -s notes.md ]; then
             echo "::error::CHANGELOG.md has no section for ${{ steps.version.outputs.version }}"
             exit 1
           fi
+
+      - name: Add install instructions for this exact version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          raw="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${TAG}"
+          cat >> notes.md <<EOF
+
+          ## Install this version
+
+          macOS / Linux:
+
+          \`\`\`bash
+          curl -fsSL ${raw}/install.sh | FLUTTER_KICKSTART_BRANCH=${TAG} bash
+          \`\`\`
+
+          Windows (PowerShell):
+
+          \`\`\`powershell
+          \$env:FLUTTER_KICKSTART_BRANCH = "${TAG}"; irm ${raw}/install.ps1 | iex
+          \`\`\`
+
+          To always track the latest release instead, use the commands in the [installation guide](https://alamin-karno.github.io/flutter-kickstart/guide/installation).
+          EOF
           cat notes.md
 
       - name: Publish the GitHub Release
@@ -52,4 +77,5 @@ jobs:
             --title "Flutter Kickstart $GITHUB_REF_NAME" \
             --notes-file notes.md \
             --verify-tag \
-            --latest
+            --latest \
+            install.sh install.ps1
