@@ -158,7 +158,9 @@ Codex (`~/.codex/skills`), Gemini CLI (`~/.gemini/skills`) and the shared
 [Full install guide](https://alamin-karno.github.io/flutter-kickstart/guide/installation).
 
 > Installs and `fks update` always use the `main` branch, which only holds
-> released versions.
+> released versions. To pin one, set `FLUTTER_KICKSTART_BRANCH` to its tag
+> (for example `v1.0.0`); each [release](https://github.com/alamin-karno/flutter-kickstart/releases)
+> lists the exact commands.
 
 ## Contributing
 

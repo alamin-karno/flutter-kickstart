@@ -54,7 +54,27 @@ by accident.
 | --- | --- | --- |
 | `FLUTTER_KICKSTART_HOME` | `~/.flutter-kickstart` | Install somewhere else |
 | `FLUTTER_KICKSTART_BIN` | `~/.local/bin` | Put the commands in another folder |
-| `FLUTTER_KICKSTART_BRANCH` | `main` | Try an unreleased branch (for contributors) |
+| `FLUTTER_KICKSTART_BRANCH` | `main` | Install a release tag such as `v1.0.0`, or try an unreleased branch (for contributors) |
+
+### Install a specific version
+
+Every [release](https://github.com/alamin-karno/flutter-kickstart/releases)
+has a `vX.Y.Z` tag. Point the installer at a tag to get exactly that version:
+
+::: code-group
+
+```bash [macOS / Linux]
+curl -fsSL https://raw.githubusercontent.com/alamin-karno/flutter-kickstart/v1.0.0/install.sh | FLUTTER_KICKSTART_BRANCH=v1.0.0 bash
+```
+
+```powershell [Windows (PowerShell)]
+$env:FLUTTER_KICKSTART_BRANCH = "v1.0.0"; irm https://raw.githubusercontent.com/alamin-karno/flutter-kickstart/v1.0.0/install.ps1 | iex
+```
+
+:::
+
+Each release page lists these commands for its own version and attaches
+`install.sh` and `install.ps1`. Run `fks --version` to see what you have.
 
 ## Claude Code plugin
 
