@@ -1,0 +1,55 @@
+/* Brand: Flutter blues with a warm "launch" accent. */
+:root {
+  --fk-blue-1: #0468d7;
+  --fk-blue-2: #0553b1;
+  --fk-blue-3: #02569b;
+  --fk-sky: #13b9fd;
+  --fk-orange: #ff8a3d;
+
+  --vp-c-brand-1: var(--fk-blue-1);
+  --vp-c-brand-2: var(--fk-blue-2);
+  --vp-c-brand-3: var(--fk-blue-3);
+  --vp-c-brand-soft: rgba(4, 104, 215, 0.12);
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #02569b 10%, #13b9fd 90%);
+  --vp-home-hero-image-background-image: linear-gradient(135deg, rgba(19, 185, 253, 0.35), rgba(255, 138, 61, 0.25));
+  --vp-home-hero-image-filter: blur(56px);
+
+  --vp-button-brand-bg: var(--fk-blue-1);
+  --vp-button-brand-hover-bg: var(--fk-blue-2);
+  --vp-button-brand-active-bg: var(--fk-blue-3);
+}
+
+.dark {
+  --vp-c-brand-1: #4fc3ff;
+  --vp-c-brand-2: #13b9fd;
+  --vp-c-brand-3: #0a9fe0;
+  --vp-c-brand-soft: rgba(19, 185, 253, 0.16);
+  --vp-home-hero-name-background: linear-gradient(120deg, #4fc3ff 10%, #9be4ff 90%);
+  --vp-button-brand-text: #04121f;
+  --vp-button-brand-hover-text: #04121f;
+  --vp-button-brand-active-text: #04121f;
+  --vp-button-brand-bg: #4fc3ff;
+  --vp-button-brand-hover-bg: #13b9fd;
+  --vp-button-brand-active-bg: #0a9fe0;
+}
+
+@media (min-width: 640px) {
+  :root { --vp-home-hero-image-filter: blur(64px); }
+}
+
+.VPHero .image-container { transform: none; width: 100%; height: auto; }
+.VPHero .image { margin: 0; }
+@media (min-width: 960px) {
+  .VPHero .image-container { width: 520px; }
+}
+
+.VPFeature .icon { background-color: var(--vp-c-brand-soft); }
+
+/* Small "agent" chips used on the home page and in docs. */
+.fk-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; padding: 0; list-style: none; }
+.fk-chips li {
+  margin: 0; padding: 4px 12px; border-radius: 999px; font-size: 14px; font-weight: 500;
+  border: 1px solid var(--vp-c-divider); background: var(--vp-c-bg-soft); color: var(--vp-c-text-1);
+}
