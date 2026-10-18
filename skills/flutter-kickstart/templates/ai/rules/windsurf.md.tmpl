@@ -8,7 +8,8 @@ Follow `AGENTS.md` at the repo root. For Dart files in particular:
 - Layers: `presentation -> domain <- data`; features never import each other.
 - Network only via `AppApiClient`; repositories return `Either<AppFailure, T>`.
 - {{state_rule}}
-- Navigate with `context.push(AppRoutes.x)`; never `Navigator.push`.
+- {{navigation_rule_short}}
+- Images/icons only via `ImageResourceResolver` (`lib/core/asset_resolver/`); no raw `'assets/...'` strings.
 - Styling via `context.colors` / `context.appColors` / `AppSpacing`; text via `context.l10n`.
 - New feature: `python3 tool/kickstart/add_feature.py --name <feature>`.
 - Run `./scripts/quality_gate.sh` before finishing.

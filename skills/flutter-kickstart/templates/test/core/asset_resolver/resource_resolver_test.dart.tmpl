@@ -1,0 +1,97 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{package}}/core/asset_resolver/png_image_resource.dart';
+import 'package:{{package}}/core/asset_resolver/resource_resolver.dart';
+import 'package:{{package}}/core/asset_resolver/svg_image_resource.dart';
+
+import '../../helpers/helpers.dart';
+
+const _resolverDir = 'lib/core/asset_resolver';
+const _resolverFile = '$_resolverDir/resource_resolver.dart';
+
+void main() {
+  group('SVGImageResource', () {
+    testWidgets('renders the asset and tints it with srcIn', (tester) async {
+      await tester.pumpApp(
+        ImageResourceResolver.appLogo.getImageWidget(
+          width: 24,
+          height: 24,
+          color: Colors.red,
+        ),
+      );
+
+      final svg = tester.widget<SvgPicture>(find.byType(SvgPicture));
+      expect(svg.width, 24);
+      expect(svg.fit, BoxFit.contain);
+      expect(
+        svg.colorFilter,
+        const ColorFilter.mode(Colors.red, BlendMode.srcIn),
+      );
+    });
+
+    test('exposes its path', () {
+      expect(
+        ImageResourceResolver.appLogo.getPath,
+        '$imageBasePath/app_logo.svg',
+      );
+    });
+  });
+
+  group('PNGImageResource', () {
+    const resource = PNGImageResource('$imageBasePath/photo.png');
+
+    test('builds Image.asset and an AssetImage for the same path', () {
+      final image =
+          resource.getImageWidget(width: 10, boxFit: BoxFit.cover) as Image;
+
+      expect(image.image, isA<AssetImage>());
+      expect((image.image as AssetImage).assetName, resource.getPath);
+      expect(image.width, 10);
+      expect(image.fit, BoxFit.cover);
+      expect(resource.assetImage.assetName, resource.getPath);
+    });
+
+    test('SVG and PNG resources share the ImageResource API', () {
+      expect(const SVGImageResource('a.svg').getPath, 'a.svg');
+    });
+  });
+
+  group('asset rules', () {
+    test('every path in ImageResourceResolver exists on disk', () {
+      final bases = {
+        'assetBasePath': assetBasePath,
+        'imageBasePath': imageBasePath,
+        'iconBasePath': iconBasePath,
+      };
+      final source = File(_resolverFile).readAsStringSync();
+      final paths = RegExp(r"ImageResource\(\s*'\$(\w+)/([^']+)'")
+          .allMatches(source)
+          .map((m) => '${bases[m.group(1)]}/${m.group(2)}')
+          .toList();
+
+      expect(paths, isNotEmpty);
+      final missing = paths.where((p) => !File(p).existsSync()).toList();
+      expect(missing, isEmpty, reason: 'Add these files or drop the getters');
+    });
+
+    test('no raw asset paths outside lib/core/asset_resolver/', () {
+      final offenders = Directory('lib')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'))
+          .where((f) => !f.path.replaceAll(r'\', '/').contains(_resolverDir))
+          .where((f) => RegExp('[\'"]assets/').hasMatch(f.readAsStringSync()))
+          .map((f) => f.path)
+          .toList();
+
+      expect(
+        offenders,
+        isEmpty,
+        reason: 'Add a getter to ImageResourceResolver and use it instead',
+      );
+    });
+  });
+}

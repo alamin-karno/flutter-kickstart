@@ -1,6 +1,6 @@
 ---
 name: architecture-reviewer
-description: Reviews a diff in {{app_name}} against its clean-architecture, state-management, error-handling, theming, navigation and network rules. Use proactively after generating or changing feature code, before calling it done.
+description: Reviews a diff in {{app_name}} against its clean-architecture, state-management, error-handling, theming, asset, navigation and network rules. Use proactively after generating or changing feature code, before calling it done.
 tools: Read, Grep, Glob, Bash
 ---
 

@@ -1,0 +1,25 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:{{package}}/core/routing/app_router.gr.dart';
+
+/// Route paths, used for deep links and web URLs. Every screen gets a
+/// constant here and an [AutoRoute] below. Navigate with the generated typed
+/// route, `context.router.push(const OrdersRoute())`, never a raw string or
+/// `Navigator.push`.
+abstract final class AppRoutes {
+  // scaffold:route-paths
+}
+
+/// The app's single router. Screens are annotated with `@RoutePage()`;
+/// `build_runner` generates their `XRoute` classes into `app_router.gr.dart`.
+/// Feature routes are added at the `scaffold:routes` marker (the scaffold's
+/// `add_feature.py` does this).
+@AutoRouterConfig(replaceInRouteName: 'Screen,Route')
+class AppRouter extends RootStackRouter {
+  @override
+  RouteType get defaultRouteType => const RouteType.material();
+
+  @override
+  List<AutoRoute> get routes => [
+    // scaffold:routes
+  ];
+}

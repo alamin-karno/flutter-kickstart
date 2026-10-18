@@ -1,0 +1,23 @@
+import 'package:flutter/material.dart';
+// scaffold:imports
+
+/// Route names. Every screen gets a constant here and a case in
+/// [onGenerateAppRoute] before anything links to it. Navigate with
+/// `Navigator.of(context).pushNamed(AppRoutes.x)`, never a raw string or a
+/// `MaterialPageRoute` built inside a widget.
+abstract final class AppRoutes {
+  // scaffold:route-paths
+}
+
+/// Maps a route name to its screen. Passed to `MaterialApp.onGenerateRoute`.
+/// Feature routes are added at the `scaffold:routes` marker (the scaffold's
+/// `add_feature.py` does this). Unknown names return null, which lets
+/// `onUnknownRoute` handle them.
+Route<dynamic>? onGenerateAppRoute(RouteSettings settings) {
+  final screen = switch (settings.name) {
+    // scaffold:routes
+    _ => null,
+  };
+  if (screen == null) return null;
+  return MaterialPageRoute<void>(builder: (_) => screen, settings: settings);
+}

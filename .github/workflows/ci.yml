@@ -53,6 +53,10 @@ jobs:
                 --features orders --locales en,bn --crash sentry --ci github
             done
           done
+          for router in go_router auto_route navigator; do
+            python skills/flutter-kickstart/scripts/scaffold.py --dry-run \
+              --name demo_${router} --org com.acme --state bloc --router $router --ci none
+          done
 
   docs:
     # Always reports a result (it's a required check), but only builds the

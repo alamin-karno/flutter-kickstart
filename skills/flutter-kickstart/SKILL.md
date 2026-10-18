@@ -1,6 +1,6 @@
 ---
 name: flutter-kickstart
-description: Creates a new production-ready Flutter app from a few quick setup questions. The app gets Very Good CLI flavors (dev/staging/prod), feature-first clean architecture, Bloc or Riverpod, an AppApiClient network layer (viva_network_kit or plain Dio) with typed AppFailure errors, go_router, theming, l10n, crash reporting (Sentry/Crashlytics), tests, optional GitHub Actions + Fastlane CI/CD, and an AI-agent layer (AGENTS.md + skills) that works in Claude Code, Cursor, Windsurf, Antigravity, Codex, Gemini CLI and Copilot. Also adds features to apps it created, and makes an existing scaffolded app AI-ready. Use whenever someone wants to start, create, bootstrap or set up a new Flutter app or project, add a feature/screen with all its layers to a scaffolded app, or set up AI rules/skills for one, even if they don't say "scaffold".
+description: Creates a new production-ready Flutter app from a few quick setup questions. The app gets Very Good CLI flavors (dev/staging/prod), feature-first clean architecture, Bloc or Riverpod, an AppApiClient network layer (viva_network_kit or plain Dio) with typed AppFailure errors, a choice of router (go_router by default, auto_route or Navigator), an image asset resolver, theming, l10n, crash reporting (Sentry/Crashlytics), tests, optional GitHub Actions + Fastlane CI/CD, and an AI-agent layer (AGENTS.md + skills) that works in Claude Code, Cursor, Windsurf, Antigravity, Codex, Gemini CLI and Copilot. Also adds features to apps it created, and makes an existing scaffolded app AI-ready. Use whenever someone wants to start, create, bootstrap or set up a new Flutter app or project, add a feature/screen with all its layers to a scaffolded app, or set up AI rules/skills for one, even if they don't say "scaffold".
 ---
 
 # Flutter Kickstart
@@ -38,14 +38,15 @@ answer makes it moot. Offer the default in brackets.
 | 4 | Platforms [android,ios] | `--platforms` |
 | 5 | State management: **Bloc or Riverpod**. Always ask; never default it. Client needs vary. | `--state bloc\|riverpod` |
 | 6 | Network client: **viva_network_kit** (company package on Dio, checks connectivity before each call) or **plain Dio** [viva]. Always ask. Features only ever see `AppApiClient`, so this only changes the implementation in `lib/core/network/`. | `--network viva\|dio` |
-| 7 | API base URL per flavor (development, staging, production). Placeholders are fine if unknown. | `--base-url development=https://...` (repeat) |
-| 8 | Starter features beyond home (e.g. auth, orders) | `--features auth,orders` |
-| 9 | Languages besides English, e.g. `bn`, `ar` [en only] | `--locales en,bn` |
-| 10 | Crash reporting: none, Sentry or Crashlytics [none] | `--crash` |
-| 11 | CI/CD: GitHub Actions + Fastlane, or none [github] | `--ci github\|none` |
-| 12 | Minimum test coverage CI enforces, in percent [80]. Skip if CI is none. | `--coverage-floor` |
-| 13 | Figma file link, optional | `--figma-url` |
-| 14 | Which AI tools the team uses [all] | `--agents all` or e.g. `claude,cursor,windsurf,antigravity` |
+| 7 | Navigation: **go_router** (declarative, URL-based), **auto_route** (typed routes, code generation) or **Navigator** (Flutter's built-in named routes, no package) [go_router]. Always ask; the team default is go_router but the choice is the user's. Features register routes the same way whichever is picked. | `--router go_router\|auto_route\|navigator` |
+| 8 | API base URL per flavor (development, staging, production). Placeholders are fine if unknown. | `--base-url development=https://...` (repeat) |
+| 9 | Starter features beyond home (e.g. auth, orders) | `--features auth,orders` |
+| 10 | Languages besides English, e.g. `bn`, `ar` [en only] | `--locales en,bn` |
+| 11 | Crash reporting: none, Sentry or Crashlytics [none] | `--crash` |
+| 12 | CI/CD: GitHub Actions + Fastlane, or none [github] | `--ci github\|none` |
+| 13 | Minimum test coverage CI enforces, in percent [80]. Skip if CI is none. | `--coverage-floor` |
+| 14 | Figma file link, optional | `--figma-url` |
+| 15 | Which AI tools the team uses [all] | `--agents all` or e.g. `claude,cursor,windsurf,antigravity` |
 
 Flavors default to development/staging/production. Those three are fully
 wired natively. Custom flavors (`--flavors`) only get Dart entrypoints, and
@@ -61,6 +62,7 @@ generating.
 python3 scripts/scaffold.py \
   --name acme_wallet --app-name "Acme Wallet" --description "..." \
   --org com.vivasoftltd --platforms android,ios --state bloc --network viva \
+  --router go_router \
   --base-url development=https://dev.api.acme.com \
   --base-url staging=https://stg.api.acme.com \
   --base-url production=https://api.acme.com \
@@ -74,8 +76,10 @@ Add `--dry-run` first if the user wants to see the plan. The script:
    the counter demo.
 2. Writes `lib/core/` (config, the `AppApiClient` contract plus the chosen
    implementation, `VivaApiClient` or `DioApiClient`, `AppFailure`,
-   logging, crash reporting, go_router, theme tokens, DI for the chosen
-   state management) plus the app shell, flavor entrypoints and tests.
+   logging, crash reporting, the chosen router, the image asset resolver,
+   theme tokens, DI for the chosen state management) plus the app shell,
+   flavor entrypoints and tests. `assets/images/` and `assets/icons/` are
+   created and declared in `pubspec.yaml`.
 3. Generates `home` and each starter feature with all layers and tests.
 4. Adds the dependencies, an ARB file per extra locale (English
    placeholders), `scripts/quality_gate.sh`, and, with `--ci github`, CI/CD
@@ -110,6 +114,8 @@ Don't imply the app can ship today because the workflow files exist.
 The generated `AGENTS.md` and `.agents/skills/` are the source of truth.
 In short: `presentation -> domain <- data`. Network only through
 `AppApiClient`. Repositories return `Either<AppFailure, T>`. State uses
-sealed classes. Navigation uses `context.push(AppRoutes.x)`. Styling uses
-theme tokens, text uses `context.l10n`, logging uses `AppLogger`. Tests
+sealed classes. Navigation uses `AppRoutes` constants through the chosen
+router (`context.push(AppRoutes.x)` with go_router). Images and icons go
+through `ImageResourceResolver`, never a raw `'assets/...'` string. Styling
+uses theme tokens, text uses `context.l10n`, logging uses `AppLogger`. Tests
 ship with every change, and `./scripts/quality_gate.sh` must pass.

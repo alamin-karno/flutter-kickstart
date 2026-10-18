@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+{{route_page_import}}import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:{{package}}/core/network/app_failure.dart';
 import 'package:{{package}}/core/widgets/failure_view.dart';
@@ -7,7 +7,7 @@ import 'package:{{package}}/features/{{feature}}/presentation/controllers/{{feat
 import 'package:{{package}}/features/{{feature}}/presentation/controllers/{{feature}}_state.dart';
 import 'package:{{package}}/l10n/l10n.dart';
 
-class {{Feature}}Screen extends ConsumerWidget {
+{{route_page_annotation}}class {{Feature}}Screen extends ConsumerWidget {
   const {{Feature}}Screen({super.key});
 
   @override

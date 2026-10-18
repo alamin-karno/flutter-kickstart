@@ -30,6 +30,7 @@ python3 ~/.flutter-kickstart/skills/flutter-kickstart/scripts/scaffold.py --name
 | --- | --- | --- |
 | `--state` | required | `bloc` or `riverpod` |
 | `--network` | `viva` | `viva` (viva_network_kit) or `dio` (plain Dio) |
+| `--router` | `go_router` | `go_router`, `auto_route` or `navigator` (Flutter's built-in, no package) |
 | `--base-url` | `https://<flavor>.api.example.com` | `FLAVOR=URL`, repeatable. A bare URL applies to every flavor |
 | `--features` | none | Starter features beyond home, e.g. `auth,orders` |
 | `--locales` | `en` | Comma list; `en` is always included |
@@ -63,6 +64,7 @@ python3 ~/.flutter-kickstart/skills/flutter-kickstart/scripts/scaffold.py --name
   "org": "com.acme",
   "state": "riverpod",
   "network": "dio",
+  "router": "go_router",
   "base_url": ["development=https://dev.api.acme.com", "production=https://api.acme.com"],
   "features": "auth,orders",
   "locales": "en,bn",

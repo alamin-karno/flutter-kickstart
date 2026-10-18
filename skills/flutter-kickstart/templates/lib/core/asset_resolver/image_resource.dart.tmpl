@@ -1,0 +1,16 @@
+import 'package:flutter/widgets.dart';
+
+/// A bundled image. Feature code never builds `Image.asset` or
+/// `SvgPicture.asset` from a path string; it asks a resource from
+/// `ImageResourceResolver` for its widget.
+abstract interface class ImageResource {
+  /// The asset path, e.g. `assets/icons/ic_search.svg`.
+  String get getPath;
+
+  Widget getImageWidget({
+    double? width,
+    double? height,
+    BoxFit? boxFit,
+    Color? color,
+  });
+}

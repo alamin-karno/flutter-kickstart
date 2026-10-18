@@ -173,6 +173,8 @@ export default defineConfig({
             { text: 'Architecture', link: '/app/architecture' },
             { text: 'State management', link: '/app/state-management' },
             { text: 'Networking and errors', link: '/app/networking' },
+            { text: 'Navigation', link: '/app/navigation' },
+            { text: 'Images and icons', link: '/app/assets' },
             { text: 'Flavors and config', link: '/app/flavors' },
             { text: 'Testing and quality gate', link: '/app/testing' },
             { text: 'CI/CD and releases', link: '/app/ci-cd' },

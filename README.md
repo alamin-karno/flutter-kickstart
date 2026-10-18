@@ -68,7 +68,7 @@ Or skip the CLI and ask your agent:
 
 - **Checks its own work.** It only reports success after `flutter analyze` and `flutter test` pass, and the coverage floor is met.
 - **Same answers, same app.** Your answers drive a deterministic generator, so every teammate and every agent gets the same project.
-- **Asks instead of guessing.** Bloc or Riverpod, viva_network_kit or plain Dio: you choose each time.
+- **Asks instead of guessing.** Bloc or Riverpod, viva_network_kit or plain Dio, go_router, auto_route or Navigator: you choose each time.
 - **Keeps AI agents on track.** Every app ships `AGENTS.md` and project skills, so your agent follows the same rules after day one.
 - **No lock-in.** The output is a normal Flutter project. Even the feature generator is copied into the app.
 
@@ -80,7 +80,7 @@ Or skip the CLI and ask your agent:
 | **Architecture** | `lib/core/` contracts + `lib/features/<name>/{domain,data,presentation}` |
 | **State** | Bloc/Cubit (`get_it` + `injectable`) or Riverpod (`riverpod_generator`) |
 | **Network** | `AppApiClient` on viva_network_kit or plain Dio, sealed `AppFailure`, `Either` everywhere, auth and logging interceptors |
-| **App shell** | `go_router`, Material 3 light/dark theme with tokens, `AppLogger`, `CrashReporter` (console, Sentry or Crashlytics), per-flavor config |
+| **App shell** | go_router, auto_route or Navigator; an image asset resolver (`ImageResourceResolver`); Material 3 light/dark theme with tokens, `AppLogger`, `CrashReporter` (console, Sentry or Crashlytics), per-flavor config |
 | **Tests** | Unit, DI, state and widget tests (about 95% coverage) and `scripts/quality_gate.sh` |
 | **CI/CD** | Optional GitHub Actions for PR checks, Android and iOS builds and store uploads, plus Fastlane and a setup guide |
 | **AI layer** | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, 10 project skills, Cursor and Windsurf rules, Copilot instructions, reviewer subagents |
@@ -119,14 +119,15 @@ Most have a default; press Enter to accept it, or pass the flag to skip the ques
 | 4 | Platforms | `--platforms` | `android,ios` |
 | 5 | State management | `--state bloc\|riverpod` | always asked |
 | 6 | Network client | `--network viva\|dio` | `viva`, always asked |
-| 7 | API base URL per flavor | `--base-url flavor=url` | placeholders |
-| 8 | Starter features beyond home | `--features auth,orders` | none |
-| 9 | Languages besides English | `--locales en,bn` | `en` |
-| 10 | Crash reporting | `--crash none\|sentry\|crashlytics` | `none` |
-| 11 | CI/CD | `--ci github\|none` | `github` |
-| 12 | Minimum test coverage (%) | `--coverage-floor` | `80` |
-| 13 | Figma file link | `--figma-url` | none |
-| 14 | AI tools the team uses | `--agents` | `all` |
+| 7 | Navigation | `--router go_router\|auto_route\|navigator` | `go_router`, always asked |
+| 8 | API base URL per flavor | `--base-url flavor=url` | placeholders |
+| 9 | Starter features beyond home | `--features auth,orders` | none |
+| 10 | Languages besides English | `--locales en,bn` | `en` |
+| 11 | Crash reporting | `--crash none\|sentry\|crashlytics` | `none` |
+| 12 | CI/CD | `--ci github\|none` | `github` |
+| 13 | Minimum test coverage (%) | `--coverage-floor` | `80` |
+| 14 | Figma file link | `--figma-url` | none |
+| 15 | AI tools the team uses | `--agents` | `all` |
 
 What each choice changes is explained in
 [the setup questions guide](https://alamin-karno.github.io/flutter-kickstart/guide/setup-questions).

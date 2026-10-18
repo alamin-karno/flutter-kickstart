@@ -3,7 +3,7 @@ name: flutter-navigation
 description: Navigation conventions for {{app_name}}: go_router only, path constants in AppRoutes, redirects for guards. Use when adding a screen or route, navigating, passing route parameters, handling deep links, or gating routes behind auth/onboarding.
 ---
 
-# Navigation
+# Navigation (go_router)
 
 `lib/core/routing/app_router.dart` owns `AppRoutes` (path constants) and
 `buildAppRouter()`. `add_feature.py` registers new feature routes at the

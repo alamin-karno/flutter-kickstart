@@ -13,7 +13,7 @@ layers.
 
 ```text
 lib/
-  app/                 App widget (MaterialApp.router, theme, l10n)
+  app/                 App widget (MaterialApp.router, or MaterialApp with Navigator; theme, l10n)
   bootstrap.dart       startup shared by every lib/main_<flavor>.dart
   core/
     config/            AppFlavor, AppConfig (base URL, DSNs via --dart-define)
@@ -21,7 +21,8 @@ lib/
     error_reporting/   CrashReporter + adapter
     logging/           AppLogger
     network/           AppApiClient + implementation, AppFailure, converter, JsonSerializer, interceptors
-    routing/           AppRoutes + buildAppRouter (go_router)
+    asset_resolver/    ImageResourceResolver + SVG/PNG image resources
+    routing/           AppRoutes + the chosen router (go_router, auto_route or Navigator)
     theming/           AppTheme, AppColors, AppSpacing, AppRadius, context extensions
     widgets/           shared widgets (FailureView)
   features/<name>/

@@ -33,7 +33,7 @@ everything straight to the generator:
 ```bash
 fks create \
   --name acme_wallet --app-name "Acme Wallet" --org com.acme \
-  --platforms android,ios --state bloc --network viva \
+  --platforms android,ios --state bloc --network viva --router go_router \
   --base-url development=https://dev.api.acme.com \
   --base-url staging=https://stg.api.acme.com \
   --base-url production=https://api.acme.com \

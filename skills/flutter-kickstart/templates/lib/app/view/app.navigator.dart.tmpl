@@ -1,0 +1,24 @@
+import 'package:flutter/material.dart';
+import 'package:{{package}}/core/routing/app_router.dart';
+import 'package:{{package}}/core/theming/app_theme.dart';
+import 'package:{{package}}/l10n/l10n.dart';
+
+class App extends StatelessWidget {
+  const App({super.key, this.initialLocation});
+
+  /// Lets tests start on a specific route.
+  final String? initialLocation;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      onGenerateTitle: (context) => context.l10n.appTitle,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      initialRoute: initialLocation ?? AppRoutes.home,
+      onGenerateRoute: onGenerateAppRoute,
+    );
+  }
+}

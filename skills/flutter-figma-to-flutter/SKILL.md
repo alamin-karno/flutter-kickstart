@@ -60,19 +60,36 @@ layers, the route and tests, then replace the generated view with the
 design. User-visible text goes into `lib/l10n/arb/app_en.arb` and is read
 through `context.l10n`.
 
-## 5. Wire navigation
+## 5. Export images and icons
 
-Every screen has an `AppRoutes` constant and a `GoRoute` in
-`lib/core/routing/app_router.dart`. Link to it with
-`context.push(AppRoutes.x)`. A screen nothing routes to is not done.
+Vector layers (icons, logos, illustrations) are exported as SVG with the
+Figma tool's asset/download call; raster artwork as PNG at 1x, 2x and 3x.
+Never screenshot a layer to use it as an asset, and never use an image for
+something a Material icon or a themed widget can draw.
 
-## 6. Verify
+- Icons go in `assets/icons/ic_<name>.svg`, everything else in
+  `assets/images/<name>.<ext>`, in snake_case.
+- Add one entry per file to `ImageResourceResolver`
+  (`lib/core/asset_resolver/resource_resolver.dart`) and render it with
+  `ImageResourceResolver.x.getImageWidget(...)`, tinting icons with a theme
+  colour. The `flutter-assets` skill has the details.
+- No `'assets/...'` string, `Image.asset` or `SvgPicture.asset` in screen
+  code.
+
+## 6. Wire navigation
+
+Every screen is registered in `lib/core/routing/app_router.dart` with an
+`AppRoutes` constant, and is linked to the way the app's
+`flutter-navigation` skill describes for its router (go_router, auto_route
+or Navigator). A screen nothing routes to is not done.
+
+## 7. Verify
 
 Add a widget test for the screen (`tester.pumpApp`). Add an `alchemist`
 golden for shared components. Then run `./scripts/quality_gate.sh` and fix
 whatever it reports.
 
-## 7. Report reused vs new
+## 8. Report reused vs new
 
-State which parts came from existing tokens and widgets, which tokens and
-widgets are new, and any values you snapped to the scale.
+State which parts came from existing tokens and widgets, which tokens,
+widgets and assets are new, and any values you snapped to the scale.

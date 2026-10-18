@@ -1,0 +1,23 @@
+import 'package:{{package}}/core/asset_resolver/svg_image_resource.dart';
+
+const String assetBasePath = 'assets';
+const String imageBasePath = '$assetBasePath/images';
+const String iconBasePath = '$assetBasePath/icons';
+
+/// The only place asset paths are written. Add one getter per file, typed by
+/// format (`SVGImageResource` for .svg, `PNGImageResource` for raster; import
+/// `png_image_resource.dart` with the first raster entry), and
+/// use it as `ImageResourceResolver.appLogo.getImageWidget(height: 48)`.
+///
+/// Naming: icons are `<name>Icon` from `assets/icons/ic_<name>.svg`; images
+/// are `<name>` from `assets/images/<name>.<ext>`. Keep getters sorted by
+/// folder, then name. `test/core/asset_resolver/` fails if a path here is
+/// missing on disk or if code elsewhere uses a raw `assets/` string.
+abstract final class ImageResourceResolver {
+  // Images (assets/images/)
+  static const SVGImageResource appLogo = SVGImageResource(
+    '$imageBasePath/app_logo.svg',
+  );
+
+  // Icons (assets/icons/)
+}

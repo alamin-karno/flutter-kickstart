@@ -29,15 +29,16 @@ python3 tool/kickstart/add_feature.py --name orders              # new feature, 
 
 ```
 lib/
-  app/                 App widget (MaterialApp.router, theme, l10n)
+  app/                 App widget ({{app_widget}}, theme, l10n)
   bootstrap.dart       startup shared by every lib/main_<flavor>.dart
   core/                cross-feature contracts and their single implementation
+    asset_resolver/    ImageResourceResolver + SVG/PNG image resources (the only place asset paths live)
     config/            AppFlavor, AppConfig (base URL, DSNs via --dart-define)
     di/                {{di_summary}}
     error_reporting/   CrashReporter + adapter
     logging/           AppLogger
     network/           AppApiClient contract + {{api_client_class}}, AppFailure, converter, JsonSerializer, interceptors
-    routing/           AppRoutes + buildAppRouter (go_router)
+    routing/           {{routing_summary}}
     theming/           AppTheme, AppColors, AppSpacing, AppRadius, context extensions
     widgets/           shared widgets (FailureView)
   features/<name>/
@@ -60,17 +61,19 @@ features; shared pieces move to `core/`.
 2. Errors are values: data sources and repositories return
    `Either<AppFailure, T>` (dartz). Nothing throws across layers.
 3. {{state_rule}}
-4. Navigation: `context.push(AppRoutes.x)` / `context.go(...)` with a
-   constant from `AppRoutes`. Never `Navigator.push` or a raw path string.
+4. {{navigation_rule}}
 5. Theme: `context.colors`, `context.appColors`, `context.textTheme`,
    `AppSpacing`, `AppRadius`. No `Color(0x...)`, no bare padding numbers.
-6. User-visible text: `context.l10n.<key>` only, keys in
+6. Images and icons: `ImageResourceResolver.x.getImageWidget(...)`. Files
+   go in `assets/icons/` or `assets/images/` with one resolver entry each;
+   no `'assets/...'` string outside `lib/core/asset_resolver/`.
+7. User-visible text: `context.l10n.<key>` only, keys in
    `lib/l10n/arb/app_en.arb`.
-7. Log through `AppLogger`, report unexpected errors through
+8. Log through `AppLogger`, report unexpected errors through
    `CrashReporter`. No `print`.
-8. Secrets and base URLs never in source: `--dart-define` or CI secrets.
-9. Every change ships with tests (`test/` mirrors `lib/`), and
-   `./scripts/quality_gate.sh` passes before you say you are done.
+9. Secrets and base URLs never in source: `--dart-define` or CI secrets.
+10. Every change ships with tests (`test/` mirrors `lib/`), and
+    `./scripts/quality_gate.sh` passes before you say you are done.
 
 ## Skills
 
@@ -81,6 +84,7 @@ features; shared pieces move to `core/`.
 | `flutter-error-handling` | anything that can fail |
 | `flutter-navigation` | adding a route or navigating |
 | `flutter-theming` | any styling; implementing a design |
+| `flutter-assets` | adding or using an image, icon or illustration |
 | `flutter-testing` | writing tests; the done-check after any change |
 {{deployment_skill_row}}| `flutter-architecture-review` | reviewing a diff against these rules |
 | `flutter-test-review` | checking a diff has the required tests |
