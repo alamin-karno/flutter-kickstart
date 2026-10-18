@@ -30,7 +30,9 @@ sys.path.insert(0, str(SCRIPTS))
 from _common import (  # noqa: E402
     CI_CHOICES,
     DEFAULT_NETWORK,
+    DEFAULT_ROUTER,
     NETWORK_CHOICES,
+    ROUTER_CHOICES,
     STATE_CHOICES,
     flutter_cmd,
     snake,
@@ -116,13 +118,19 @@ def cmd_create(argv: List[str]) -> int:
     flags = ["--name", package, "--app-name", app_name, "--org", org, "--state", state]
     if not quick:
         network = choose("Network client?", NETWORK_CHOICES, DEFAULT_NETWORK, {"viva": "viva_network_kit", "dio": "plain Dio"})
+        router = choose(
+            "Navigation?",
+            ROUTER_CHOICES,
+            DEFAULT_ROUTER,
+            {"go_router": "declarative", "auto_route": "typed, codegen", "navigator": "built-in, no package"},
+        )
         platforms = ask("Platforms?", "android,ios")
         features = ask("Starter features besides home? (comma list, blank for none)", "-")
         locales = ask("Languages? (comma list)", "en")
         crash = choose("Crash reporting?", ("none", "sentry", "crashlytics"), "none")
         ci = choose("CI/CD?", CI_CHOICES, "github", {"github": "Actions + Fastlane"})
         base_url = ask("API base URL? (blank for per-flavor placeholders)", "-")
-        flags += ["--network", network, "--platforms", platforms, "--locales", locales, "--crash", crash, "--ci", ci]
+        flags += ["--network", network, "--router", router, "--platforms", platforms, "--locales", locales, "--crash", crash, "--ci", ci]
         if features != "-":
             flags += ["--features", ",".join(comma_list(features))]
         if base_url != "-":

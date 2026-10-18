@@ -6,14 +6,14 @@
         --base-url development=https://dev.api.acme.com \
         --base-url staging=https://stg.api.acme.com \
         --base-url production=https://api.acme.com \
-        --network viva --ci github --locales en \
+        --network viva --router go_router --ci github --locales en \
         --features auth,orders --crash sentry --agents all
 
     python3 scaffold.py --config answers.json      # same keys as the flags
     python3 scaffold.py ... --dry-run              # print the plan only
 
 Steps: Very Good CLI base (flavors, lints, l10n) -> core abstractions ->
-app shell -> home + starter features -> dependencies -> CI/CD -> AI-agent
+app shell + asset resolver -> home + starter features -> dependencies -> CI/CD -> AI-agent
 layer for every supported agent -> codegen -> format -> analyze -> test.
 Stdlib only; needs Flutter (or fvm) and Very Good CLI (activated if missing).
 """
@@ -37,10 +37,14 @@ import setup_ai  # noqa: E402
 from _common import (  # noqa: E402
     API_CLIENTS,
     ARB_DIR,
+    ASSET_DIRS,
     NETWORK_LABELS,
     CI_CHOICES,
     DEFAULT_NETWORK,
+    DEFAULT_ROUTER,
     NETWORK_CHOICES,
+    ROUTER_CHOICES,
+    ROUTER_LABELS,
     STATE_CHOICES,
     TEMPLATE_LOCALE,
     TEMPLATES,
@@ -51,6 +55,8 @@ from _common import (  # noqa: E402
     info,
     insert_before_marker,
     render_tree,
+    route_entry,
+    router_values,
     run,
     safe_fix,
     snake,
@@ -65,11 +71,12 @@ FLAVOR_SUFFIX = {"development": " [DEV]", "staging": " [STG]", "production": ""}
 CRASH_CHOICES = ("none", "sentry", "crashlytics")
 # Not counted towards the coverage floor: generated code and entrypoints.
 # Used by the scaffold's own check and rendered into pr_checks.yml.
-COVERAGE_EXCLUDES = ("**/*.g.dart", "**/*.config.dart", "lib/l10n/gen/**", "lib/main_*.dart", "lib/bootstrap.dart")
+COVERAGE_EXCLUDES = ("**/*.g.dart", "**/*.gr.dart", "**/*.config.dart", "lib/l10n/gen/**", "lib/main_*.dart", "lib/bootstrap.dart")
 
 BLOC_DEPS = ["get_it", "injectable", "dev:injectable_generator"]
 RIVERPOD_DEPS = ["flutter_riverpod", "riverpod_annotation", "dev:riverpod_generator"]
-COMMON_DEPS = ["dio", "dartz", "go_router", "meta", "dev:build_runner"]
+COMMON_DEPS = ["dio", "dartz", "flutter_svg", "meta", "dev:build_runner"]
+ROUTER_DEPS = {"go_router": ["go_router"], "auto_route": ["auto_route", "dev:auto_route_generator"], "navigator": []}
 NETWORK_DEPS = {"viva": ["viva_network_kit"], "dio": []}
 CRASH_DEPS = {"none": [], "sentry": ["sentry_flutter"], "crashlytics": ["firebase_core", "firebase_crashlytics"]}
 # Android minSdk each crash SDK requires (Flutter's default is lower).
@@ -96,6 +103,8 @@ def parse_args() -> Dict:
     p.add_argument("--state", choices=STATE_CHOICES, help="State management (always ask the user)")
     p.add_argument("--network", choices=NETWORK_CHOICES, default=DEFAULT_NETWORK,
                    help="HTTP client behind AppApiClient: viva (viva_network_kit) or dio (plain Dio)")
+    p.add_argument("--router", choices=ROUTER_CHOICES, default=DEFAULT_ROUTER,
+                   help="Navigation: go_router (default), auto_route or navigator (Flutter's built-in, no package)")
     p.add_argument("--ci", choices=CI_CHOICES, default="github",
                    help="CI/CD to generate: github (Actions + Fastlane) or none")
     p.add_argument("--locales", default=TEMPLATE_LOCALE,
@@ -296,7 +305,7 @@ def remove_starter_code(root: Path, dry: bool) -> None:
 
 def write_shell(a: Dict, root: Path, values: Dict[str, str], dry: bool) -> None:
     step("Core abstractions, app shell and tests")
-    selected = (a["state"], a["network"])
+    selected = (a["state"], a["network"], a["router"])
     render_tree(TEMPLATES / "lib", root / "lib", values, selected=selected, dry_run=dry)
     render_tree(TEMPLATES / "test", root / "test", values, selected=selected, dry_run=dry)
     # Keep only the chosen crash adapter (console is always kept for tests).
@@ -355,19 +364,38 @@ def write_locales(a: Dict, root: Path, dry: bool) -> None:
         plist.write_text(new, encoding="utf-8")
 
 
-def write_home(root: Path, values: Dict[str, str], dry: bool) -> None:
+def write_home(a: Dict, root: Path, values: Dict[str, str], dry: bool) -> None:
     step("Home feature")
     render_tree(TEMPLATES / "feature/home", root, values, dry_run=dry)
     if dry:
         return
     router = root / "lib/core/routing/app_router.dart"
-    insert_before_marker(router, "scaffold:imports", f"import 'package:{values['package']}/features/home/home.dart';")
+    if a["router"] != "auto_route":
+        insert_before_marker(router, "scaffold:imports", f"import 'package:{values['package']}/features/home/home.dart';")
     insert_before_marker(router, "scaffold:route-paths", "static const home = '/';")
-    insert_before_marker(
-        router,
-        "scaffold:routes",
-        "GoRoute(\n  path: AppRoutes.home,\n  name: 'home',\n  builder: (context, state) => const HomeScreen(),\n),",
-    )
+    insert_before_marker(router, "scaffold:routes", route_entry(a["router"], "home", "HomeScreen"))
+
+
+def write_assets(root: Path, dry: bool) -> None:
+    """Declare the image folders in pubspec.yaml. The folders themselves and
+    the resolver come from templates/project and templates/lib."""
+    step("Asset resolver")
+    pubspec = root / "pubspec.yaml"
+    if dry or not pubspec.exists():
+        return
+    text = pubspec.read_text(encoding="utf-8")
+    missing = [d for d in ASSET_DIRS if f"- {d}" not in text]
+    if not missing:
+        return
+    entries = "".join(f"    - {d}\n" for d in missing)
+    if re.search(r"^  assets:\s*$", text, re.MULTILINE):
+        text = re.sub(r"^(  assets:[ \t]*\n)", lambda m: m.group(1) + entries, text, count=1, flags=re.MULTILINE)
+    elif re.search(r"^flutter:\s*$", text, re.MULTILINE):
+        text = re.sub(r"^(flutter:[ \t]*\n)", lambda m: m.group(1) + "  assets:\n" + entries, text, count=1, flags=re.MULTILINE)
+    else:
+        text = text.rstrip("\n") + "\n\nflutter:\n  assets:\n" + entries
+    pubspec.write_text(text, encoding="utf-8")
+    info(f"pubspec.yaml assets: {', '.join(missing)}")
 
 
 def configure_dependencies(a: Dict, root: Path) -> None:
@@ -376,6 +404,7 @@ def configure_dependencies(a: Dict, root: Path) -> None:
     deps = (
         COMMON_DEPS
         + NETWORK_DEPS[a["network"]]
+        + ROUTER_DEPS[a["router"]]
         + (BLOC_DEPS if a["state"] == "bloc" else RIVERPOD_DEPS)
         + CRASH_DEPS[a["crash"]]
     )
@@ -513,6 +542,7 @@ def summary(a: Dict, root: Path, ids: Dict[str, str]) -> None:
 
   State management : {a['state']}
   Network          : {API_CLIENTS[a['network']][1]} ({NETWORK_LABELS[a['network']]})
+  Navigation       : {ROUTER_LABELS[a['router']]}
   Locales          : {', '.join(a['locales'])}
   CI/CD            : {a['ci']}
   Flavors          : {', '.join(flavors)}
@@ -540,7 +570,7 @@ def main() -> None:
     dry = a["dry_run"]
 
     step("Plan")
-    for key in ("name", "app_name", "org", "platforms", "state", "network", "flavors", "base_urls",
+    for key in ("name", "app_name", "org", "platforms", "state", "network", "router", "flavors", "base_urls",
                 "locales", "features", "crash", "ci", "agents"):
         info(f"{key:10}: {a[key]}")
     info(f"{'project':10}: {root}")
@@ -570,6 +600,7 @@ def main() -> None:
         "figma_url": a.get("figma_url") or "_not set yet: add the Figma file link when design work starts_",
         **ids,
         **crash_doc_values(a["crash"]),
+        **router_values(a["router"]),
     }
 
     remove_starter_code(root, dry)
@@ -577,20 +608,22 @@ def main() -> None:
         align_android_kotlin(root)
     write_shell(a, root, values, dry)
     write_locales(a, root, dry)
-    write_home(root, values, dry)
+    write_home(a, root, values, dry)
     write_project_files(a, root, values, dry)
+    write_assets(root, dry)
     if dry:
         return
 
     configure_dependencies(a, root)
     raise_android_min_sdk(root, CRASH_MIN_SDK[a["crash"]])
     for feature in a["features"]:
-        add_feature.generate(root, feature, state=a["state"])
+        add_feature.generate(root, feature, state=a["state"], router=a["router"])
 
     ai_values = setup_ai.build_values(
         root,
         state=a["state"],
         network=a["network"],
+        router=a["router"],
         ci=a["ci"],
         app_name=a["app_name"],
         description=values["description"],

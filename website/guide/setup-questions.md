@@ -23,14 +23,15 @@ pointless, and read everything back before generating.
 | 4 | Platforms | `--platforms` | `android,ios` |
 | 5 | State management: Bloc or Riverpod | `--state bloc\|riverpod` | none, always asked |
 | 6 | Network client: viva_network_kit or plain Dio | `--network viva\|dio` | `viva`, always asked |
-| 7 | API base URL per flavor | `--base-url flavor=url` (repeat) | `https://<flavor>.api.example.com` |
-| 8 | Starter features beyond home | `--features auth,orders` | none |
-| 9 | Languages besides English | `--locales en,bn` | `en` |
-| 10 | Crash reporting: none, Sentry or Crashlytics | `--crash` | `none` |
-| 11 | CI/CD: GitHub Actions + Fastlane, or none | `--ci github\|none` | `github` |
-| 12 | Minimum test coverage, in percent | `--coverage-floor` | `80` |
-| 13 | Figma file link | `--figma-url` | none |
-| 14 | AI tools the team uses | `--agents` | `all` |
+| 7 | Navigation: go_router, auto_route or Navigator | `--router go_router\|auto_route\|navigator` | `go_router`, always asked |
+| 8 | API base URL per flavor | `--base-url flavor=url` (repeat) | `https://<flavor>.api.example.com` |
+| 9 | Starter features beyond home | `--features auth,orders` | none |
+| 10 | Languages besides English | `--locales en,bn` | `en` |
+| 11 | Crash reporting: none, Sentry or Crashlytics | `--crash` | `none` |
+| 12 | CI/CD: GitHub Actions + Fastlane, or none | `--ci github\|none` | `github` |
+| 13 | Minimum test coverage, in percent | `--coverage-floor` | `80` |
+| 14 | Figma file link | `--figma-url` | none |
+| 15 | AI tools the team uses | `--agents` | `all` |
 
 ## What the choices change
 
@@ -52,6 +53,14 @@ swaps one class in `lib/core/network/`:
 Both share `dio_factory.dart`, `AppFailureConverter` and the same
 `JsonSerializer` API, so features, repositories and the feature generator are
 identical either way. See [Networking and errors](/app/networking).
+
+### Navigation
+
+**go_router** is the default, but you pick: **auto_route** for typed,
+generated routes, or **Navigator** for Flutter's built-in named routes with
+no package. The choice swaps `lib/core/routing/app_router.dart`, the app
+widget and the `flutter-navigation` skill. `AppRoutes` constants and
+`add_feature.py` work the same with all three. See [Navigation](/app/navigation).
 
 ### Languages
 

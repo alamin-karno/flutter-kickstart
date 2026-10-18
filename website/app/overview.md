@@ -14,18 +14,18 @@ in the box.
 | **Architecture** | `lib/core/` contracts + `lib/features/<name>/{domain,data,presentation}` |
 | **State** | Bloc/Cubit (`get_it` + `injectable`) or Riverpod (`riverpod_generator`) |
 | **Network** | `AppApiClient` contract on viva_network_kit or plain Dio, sealed `AppFailure`, `Either` everywhere, auth and logging interceptors |
-| **Shell** | `go_router` with `AppRoutes`, Material 3 light/dark theme with `AppColors`, `AppSpacing`, `AppRadius`, `AppLogger`, `CrashReporter` (console, Sentry or Crashlytics), per-flavor `AppConfig` with `--dart-define` overrides |
+| **Shell** | go_router, auto_route or Navigator with `AppRoutes`, an image asset resolver (`ImageResourceResolver`), Material 3 light/dark theme with `AppColors`, `AppSpacing`, `AppRadius`, `AppLogger`, `CrashReporter` (console, Sentry or Crashlytics), per-flavor `AppConfig` with `--dart-define` overrides |
 | **Features** | `home`, plus any starter features, each with every layer, DI, a route, l10n and tests |
 | **Tests** | Unit, DI, bloc/controller and widget tests (about 95% line coverage), `AppApiClient` contract tests, `scripts/quality_gate.sh` |
 | **CI/CD** | Optional: GitHub Actions for PR checks, Android and iOS builds and store uploads, Fastlane, symbol upload, a setup guide |
-| **AI layer** | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, 10 project skills, Cursor and Windsurf rules, Copilot instructions, Claude reviewer subagents, and a vendored feature generator |
+| **AI layer** | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, 11 project skills, Cursor and Windsurf rules, Copilot instructions, Claude reviewer subagents, and a vendored feature generator |
 
 ## The project at a glance
 
 ```text
 my_app/
   lib/
-    app/                    App widget (MaterialApp.router, theme, l10n)
+    app/                    App widget (MaterialApp.router, or MaterialApp with Navigator; theme, l10n)
     bootstrap.dart          startup shared by every flavor
     main_development.dart   one entrypoint per flavor
     main_staging.dart

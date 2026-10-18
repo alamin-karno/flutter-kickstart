@@ -1,0 +1,33 @@
+import 'package:flutter/widgets.dart';
+import 'package:{{package}}/core/asset_resolver/asset_image_provider.dart';
+import 'package:{{package}}/core/asset_resolver/image_resource.dart';
+
+/// A raster asset (PNG, JPG, WebP). Put 2.0x/3.0x variants in sibling
+/// `2.0x/` and `3.0x/` folders; Flutter picks the right one.
+class PNGImageResource implements ImageResource, AssetImageProvider {
+  const PNGImageResource(this.name);
+
+  final String name;
+
+  @override
+  String get getPath => name;
+
+  @override
+  AssetImage get assetImage => AssetImage(name);
+
+  @override
+  Widget getImageWidget({
+    double? width,
+    double? height,
+    BoxFit? boxFit,
+    Color? color,
+  }) {
+    return Image.asset(
+      name,
+      width: width,
+      height: height,
+      fit: boxFit,
+      color: color,
+    );
+  }
+}

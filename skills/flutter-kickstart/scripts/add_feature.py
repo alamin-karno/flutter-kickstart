@@ -7,7 +7,8 @@ controller + screen), DI wiring, a route, l10n strings and tests, then runs
 code generation and formatting.
 
     python3 add_feature.py --root . --name orders [--entity order]
-        [--endpoint /orders] [--state bloc|riverpod] [--dry-run] [--no-verify]
+        [--endpoint /orders] [--state bloc|riverpod]
+        [--router go_router|auto_route|navigator] [--dry-run] [--no-verify]
 
 Safe to re-run: existing files are kept unless --force is given, and route /
 parser / l10n insertions are idempotent.
@@ -22,19 +23,24 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from _common import (  # noqa: E402
+    ROUTER_CHOICES,
     STATE_CHOICES,
     TEMPLATES,
     add_arb_strings,
     camel,
     dart_cmd,
+    detect_router,
     detect_state_management,
     fail,
     flutter_cmd,
     info,
     insert_before_marker,
+    navigate_example,
     pascal,
     read_package_name,
     render_tree,
+    route_entry,
+    router_values,
     run,
     safe_fix,
     singular,
@@ -48,41 +54,26 @@ from _common import (  # noqa: E402
 RESERVED = {"core", "app", "l10n", "home", "shared"}
 
 
-def register_route(root: Path, package: str, feature: str, path: str, screen: str, dry_run: bool) -> None:
-    router = root / "lib/core/routing/app_router.dart"
-    ok = all(
-        [
-            insert_before_marker(
-                router,
-                "scaffold:imports",
-                f"import 'package:{package}/features/{feature}/{feature}.dart';",
-                dry_run=dry_run,
-            ),
-            insert_before_marker(
-                router,
-                "scaffold:route-paths",
-                f"static const {camel(feature)} = '{path}';",
-                dry_run=dry_run,
-            ),
-            insert_before_marker(
-                router,
-                "scaffold:routes",
-                f"GoRoute(\n"
-                f"  path: AppRoutes.{camel(feature)},\n"
-                f"  name: '{camel(feature)}',\n"
-                f"  builder: (context, state) => const {screen}(),\n"
-                f"),",
-                dry_run=dry_run,
-            ),
-        ]
-    )
+def register_route(
+    root: Path, package: str, feature: str, path: str, screen: str, router: str, dry_run: bool
+) -> None:
+    router_file = root / "lib/core/routing/app_router.dart"
+    route = camel(feature)
+    inserts = [
+        ("scaffold:route-paths", f"static const {route} = '{path}';"),
+        ("scaffold:routes", route_entry(router, route, screen)),
+    ]
+    # auto_route's generated app_router.gr.dart imports the screens itself.
+    if router != "auto_route":
+        inserts.insert(0, ("scaffold:imports", f"import 'package:{package}/features/{feature}/{feature}.dart';"))
+    ok = all([insert_before_marker(router_file, marker, snippet, dry_run=dry_run) for marker, snippet in inserts])
     if ok:
-        info(f"route  {path} -> {screen}")
+        info(f"route  {path} -> {screen} ({router})")
     else:
         warn(
-            "lib/core/routing/app_router.dart has no `// scaffold:*` markers. "
-            f"Add `static const {camel(feature)} = '{path}';` to AppRoutes and a "
-            f"GoRoute building `const {screen}()` by hand."
+            "lib/core/routing/app_router.dart is missing a `// scaffold:*` marker. "
+            f"Add `static const {route} = '{path}';` to AppRoutes and register "
+            f"`{route_entry(router, route, screen).splitlines()[0]}` by hand."
         )
 
 
@@ -110,6 +101,7 @@ def generate(
     entity: str | None = None,
     endpoint: str | None = None,
     state: str | None = None,
+    router: str | None = None,
     force: bool = False,
     dry_run: bool = False,
 ) -> None:
@@ -124,6 +116,7 @@ def generate(
     endpoint = endpoint or f"/{feature.replace('_', '-')}"
     package = read_package_name(root)
     state = state or detect_state_management(root)
+    router = router or detect_router(root)
 
     values = {
         "package": package,
@@ -133,6 +126,7 @@ def generate(
         "entity": entity,
         "Entity": pascal(entity),
         "endpoint": endpoint,
+        **router_values(router),
     }
     tokens = {"feature": feature, "entity": entity}
     step(f"Feature `{feature}` ({state}, entity {pascal(entity)}, GET {endpoint})")
@@ -145,7 +139,7 @@ def generate(
             overwrite=force,
             dry_run=dry_run,
         )
-    register_route(root, package, feature, f"/{feature.replace('_', '-')}", f"{pascal(feature)}Screen", dry_run)
+    register_route(root, package, feature, f"/{feature.replace('_', '-')}", f"{pascal(feature)}Screen", router, dry_run)
     register_parser(root, package, feature, entity, state, dry_run)
     add_arb_strings(root, {f"{camel(feature)}Title": title(feature)}, dry_run)
 
@@ -171,6 +165,7 @@ def main() -> None:
     parser.add_argument("--entity", help="Entity name (default: singular of --name)")
     parser.add_argument("--endpoint", help="GET path for the list (default: /<name>)")
     parser.add_argument("--state", choices=STATE_CHOICES, help="Default: detected from pubspec.yaml")
+    parser.add_argument("--router", choices=ROUTER_CHOICES, help="Default: detected from pubspec.yaml")
     parser.add_argument("--force", action="store_true", help="Overwrite existing feature files")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-verify", action="store_true", help="Skip flutter analyze/test")
@@ -183,6 +178,7 @@ def main() -> None:
         entity=args.entity,
         endpoint=args.endpoint,
         state=args.state,
+        router=args.router,
         force=args.force,
         dry_run=args.dry_run,
     )
@@ -191,10 +187,10 @@ def main() -> None:
     post_generate(root)
     if not args.no_verify:
         verify(root)
+    route = navigate_example(args.router or detect_router(root), camel(snake(args.name)))
     print(
         "\nDone. Next: replace the stub model fields with the real API shape, "
-        "then link to the screen with `context.push(AppRoutes."
-        f"{camel(snake(args.name))})`."
+        f"then link to the screen with `{route}`."
     )
 
 

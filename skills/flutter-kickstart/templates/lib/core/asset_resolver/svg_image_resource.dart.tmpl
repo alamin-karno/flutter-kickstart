@@ -1,0 +1,32 @@
+import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:{{package}}/core/asset_resolver/image_resource.dart';
+
+/// A vector asset. `color` tints the whole SVG (`BlendMode.srcIn`), so pass
+/// a theme colour such as `context.colors.primary`, never a hex literal.
+class SVGImageResource implements ImageResource {
+  const SVGImageResource(this.name);
+
+  final String name;
+
+  @override
+  String get getPath => name;
+
+  @override
+  Widget getImageWidget({
+    double? width,
+    double? height,
+    BoxFit? boxFit,
+    Color? color,
+  }) {
+    return SvgPicture.asset(
+      name,
+      width: width,
+      height: height,
+      fit: boxFit ?? BoxFit.contain,
+      colorFilter: color == null
+          ? null
+          : ColorFilter.mode(color, BlendMode.srcIn),
+    );
+  }
+}

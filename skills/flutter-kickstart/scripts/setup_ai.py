@@ -17,6 +17,7 @@ One source of truth, read by every supported agent:
     tool/kickstart/                 add_feature.py + feature templates (no plugin needed later)
 
     python3 setup_ai.py --root . [--agents all|claude,cursor,...] [--copy]
+        [--router go_router|auto_route|navigator]
 
 Re-running refreshes everything this script owns and leaves other files alone.
 """
@@ -37,16 +38,19 @@ from _common import (  # noqa: E402
     CI_CHOICES,
     NETWORK_CHOICES,
     NETWORK_LABELS,
+    ROUTER_CHOICES,
     SKILL_DIR,
     STATE_CHOICES,
     TEMPLATES,
     detect_network,
+    detect_router,
     detect_state_management,
     fail,
     info,
     read_package_name,
     render,
     render_tree,
+    router_values,
     step,
     title,
     warn,
@@ -58,6 +62,9 @@ MIRRORS = {"claude": ".claude/skills", "cursor": ".cursor/skills", "windsurf": "
 CRASH_LABELS = {"none": "console only (no backend yet)", "sentry": "Sentry", "crashlytics": "Firebase Crashlytics"}
 # Skills that only make sense when CI/CD was generated.
 CI_ONLY_SKILLS = {"flutter-deployment"}
+# Skills shipped in one variant per setup answer: `<prefix><choice>` is
+# installed as `<prefix without the trailing dash>`.
+VARIANT_SKILLS = ("flutter-state-management-", "flutter-navigation-")
 
 
 def network_values(network: str) -> Dict[str, str]:
@@ -136,7 +143,42 @@ def state_values(state: str) -> Dict[str, str]:
     }
 
 
-def build_values(root: Path, *, state: str, network: str, ci: str, app_name: str, description: str,
+def navigation_values(router: str) -> Dict[str, str]:
+    values = router_values(router)
+    if router == "auto_route":
+        values.update({
+            "app_widget": "MaterialApp.router",
+            "routing_summary": "AppRoutes + AppRouter (auto_route; app_router.gr.dart is generated)",
+            "navigation_rule": (
+                "Navigation: the generated typed route, `context.router.push(const OrdersRoute())`.\n"
+                "   Screens carry `@RoutePage()`. Never `Navigator.push` or a raw path string."
+            ),
+            "navigation_rule_short": "Navigate with typed routes, `context.router.push(const XRoute())`; never `Navigator.push`.",
+        })
+    elif router == "navigator":
+        values.update({
+            "app_widget": "MaterialApp",
+            "routing_summary": "AppRoutes + onGenerateAppRoute (Flutter Navigator, named routes)",
+            "navigation_rule": (
+                "Navigation: `Navigator.of(context).pushNamed(AppRoutes.x)` with a constant\n"
+                "   from `AppRoutes`. Never a raw route string or a `MaterialPageRoute` built in a widget."
+            ),
+            "navigation_rule_short": "Navigate with `Navigator.of(context).pushNamed(AppRoutes.x)`; never build routes in widgets.",
+        })
+    else:
+        values.update({
+            "app_widget": "MaterialApp.router",
+            "routing_summary": "AppRoutes + buildAppRouter (go_router)",
+            "navigation_rule": (
+                "Navigation: `context.push(AppRoutes.x)` / `context.go(...)` with a\n"
+                "   constant from `AppRoutes`. Never `Navigator.push` or a raw path string."
+            ),
+            "navigation_rule_short": "Navigate with `context.push(AppRoutes.x)`; never `Navigator.push`.",
+        })
+    return values
+
+
+def build_values(root: Path, *, state: str, network: str, router: str, ci: str, app_name: str, description: str,
                  application_id: str, flavors: Iterable[str], crash: str, uses_fvm: bool) -> Dict[str, str]:
     values = {
         "package": read_package_name(root),
@@ -150,6 +192,7 @@ def build_values(root: Path, *, state: str, network: str, ci: str, app_name: str
     }
     values.update(state_values(state))
     values.update(network_values(network))
+    values.update(navigation_values(router))
     values.update(ci_values(ci))
     return values
 
@@ -175,10 +218,11 @@ def install_skills(root: Path, values: Dict[str, str], state: str, ci: str) -> L
         if ci == "none" and name in CI_ONLY_SKILLS:
             shutil.rmtree(canonical / name, ignore_errors=True)
             continue
-        if name.startswith("flutter-state-management-"):
-            if not name.endswith(state):
+        prefix = next((p for p in VARIANT_SKILLS if name.startswith(p)), None)
+        if prefix:
+            if name[len(prefix):] not in (state, values["router"]):
                 continue
-            name = "flutter-state-management"
+            name = prefix.rstrip("-")
         dest = canonical / name
         if dest.exists():
             shutil.rmtree(dest)
@@ -279,6 +323,7 @@ def main() -> None:
     parser.add_argument("--application-id", default="")
     parser.add_argument("--state", choices=STATE_CHOICES, help="Default: detected from pubspec.yaml")
     parser.add_argument("--network", choices=NETWORK_CHOICES, help="Default: detected from pubspec.yaml")
+    parser.add_argument("--router", choices=ROUTER_CHOICES, help="Default: detected from pubspec.yaml")
     parser.add_argument("--ci", choices=CI_CHOICES, help="Default: github if .github/workflows/pr_checks.yml exists")
     parser.add_argument("--crash", default="none", choices=sorted(CRASH_LABELS))
     parser.add_argument("--flavors", default="development,staging,production")
@@ -292,6 +337,7 @@ def main() -> None:
         root,
         state=state,
         network=args.network or detect_network(root),
+        router=args.router or detect_router(root),
         ci=ci,
         app_name=args.app_name or title(package),
         description=args.description,

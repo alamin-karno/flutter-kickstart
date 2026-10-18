@@ -18,6 +18,8 @@ Install: `curl -fsSL https://raw.githubusercontent.com/alamin-karno/flutter-kick
 - [Architecture](https://alamin-karno.github.io/flutter-kickstart/app/architecture): layers, dependency rule, non-negotiable rules
 - [State management](https://alamin-karno.github.io/flutter-kickstart/app/state-management): Bloc vs Riverpod
 - [Networking and errors](https://alamin-karno.github.io/flutter-kickstart/app/networking): AppApiClient, AppFailure, Either
+- [Navigation](https://alamin-karno.github.io/flutter-kickstart/app/navigation): go_router, auto_route or Navigator
+- [Images and icons](https://alamin-karno.github.io/flutter-kickstart/app/assets): ImageResourceResolver, SVG/PNG resources
 - [Flavors and config](https://alamin-karno.github.io/flutter-kickstart/app/flavors)
 - [Testing and quality gate](https://alamin-karno.github.io/flutter-kickstart/app/testing)
 - [CI/CD and releases](https://alamin-karno.github.io/flutter-kickstart/app/ci-cd)

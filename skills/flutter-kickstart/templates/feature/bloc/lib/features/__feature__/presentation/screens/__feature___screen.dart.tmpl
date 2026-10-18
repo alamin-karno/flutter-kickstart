@@ -1,4 +1,4 @@
-import 'dart:async';
+{{route_page_import}}import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,7 +8,7 @@ import 'package:{{package}}/features/{{feature}}/domain/entities/{{entity}}.dart
 import 'package:{{package}}/features/{{feature}}/presentation/cubit/{{feature}}_cubit.dart';
 import 'package:{{package}}/l10n/l10n.dart';
 
-class {{Feature}}Screen extends StatelessWidget {
+{{route_page_annotation}}class {{Feature}}Screen extends StatelessWidget {
   const {{Feature}}Screen({super.key});
 
   @override

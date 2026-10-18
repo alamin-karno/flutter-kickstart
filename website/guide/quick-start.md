@@ -24,6 +24,7 @@ and state management, and uses defaults for everything else.
 ? Organization / reverse domain? [com.example] com.acme
 ? State management? bloc (Cubit + get_it) / riverpod (riverpod_generator) [bloc]
 ? Network client? viva (viva_network_kit) / dio (plain Dio) [viva] dio
+? Navigation? go_router (declarative) / auto_route (typed, codegen) / navigator (built-in, no package) [go_router]
 ...
 ? Generate it now? [Y]
 ```

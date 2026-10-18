@@ -28,7 +28,42 @@ NETWORK_LABELS = {"viva": "viva_network_kit (on Dio)", "dio": "plain Dio"}
 # AppApiClient implementation per network choice: (file in lib/core/network/, class).
 API_CLIENTS = {"viva": ("viva_api_client.dart", "VivaApiClient"), "dio": ("dio_api_client.dart", "DioApiClient")}
 CI_CHOICES = ("github", "none")
-_VARIANT_MARKERS = STATE_CHOICES + NETWORK_CHOICES
+ROUTER_CHOICES = ("go_router", "auto_route", "navigator")
+DEFAULT_ROUTER = "go_router"
+ROUTER_LABELS = {
+    "go_router": "go_router (declarative, URL-based)",
+    "auto_route": "auto_route (typed routes, code generation)",
+    "navigator": "Navigator (Flutter's built-in named routes, no package)",
+}
+_VARIANT_MARKERS = STATE_CHOICES + NETWORK_CHOICES + ROUTER_CHOICES
+
+# Image assets live in these folders and are only referenced through
+# ImageResourceResolver in lib/core/asset_resolver/.
+ASSET_DIRS = ("assets/images/", "assets/icons/")
+
+
+def route_entry(router: str, route: str, screen: str) -> str:
+    """The snippet registered at `// scaffold:routes` for one screen."""
+    if router == "auto_route":
+        return f"AutoRoute(page: {screen[: -len('Screen')]}Route.page, path: AppRoutes.{route}),"
+    if router == "navigator":
+        return f"AppRoutes.{route} => const {screen}(),"
+    return (
+        f"GoRoute(\n"
+        f"  path: AppRoutes.{route},\n"
+        f"  name: '{route}',\n"
+        f"  builder: (context, state) => const {screen}(),\n"
+        f"),"
+    )
+
+
+def navigate_example(router: str, route: str) -> str:
+    """How code links to a route, for messages and docs."""
+    if router == "auto_route":
+        return f"context.router.push(const {pascal(route)}Route())"
+    if router == "navigator":
+        return f"Navigator.of(context).pushNamed(AppRoutes.{route})"
+    return f"context.push(AppRoutes.{route})"
 
 
 # --------------------------------------------------------------------------- #
@@ -229,6 +264,24 @@ def detect_state_management(root: Path) -> str:
 
 def detect_network(root: Path) -> str:
     return "viva" if _has_dependency(root, "viva_network_kit") else "dio"
+
+
+def detect_router(root: Path) -> str:
+    if _has_dependency(root, "auto_route"):
+        return "auto_route"
+    return "go_router" if _has_dependency(root, "go_router") else "navigator"
+
+
+def router_values(router: str) -> Dict[str, str]:
+    """Placeholders that differ per router in shell, feature and AI templates."""
+    auto = router == "auto_route"
+    return {
+        "router": router,
+        "router_label": ROUTER_LABELS[router],
+        # auto_route needs @RoutePage() on every routed screen.
+        "route_page_import": "import 'package:auto_route/auto_route.dart';\n" if auto else "",
+        "route_page_annotation": "@RoutePage()\n" if auto else "",
+    }
 
 
 def flutter_cmd(root: Path) -> List[str]:

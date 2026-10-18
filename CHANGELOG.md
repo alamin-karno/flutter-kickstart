@@ -6,6 +6,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Navigation is now a setup question (`--router`): go_router (default), auto_route or Flutter's built-in Navigator. The router file, app widget, screen annotations, `add_feature.py` route registration and the `flutter-navigation` skill follow the choice.
+- Every generated app gets an image asset resolver in `lib/core/asset_resolver/` (`ImageResourceResolver`, `SVGImageResource`, `PNGImageResource`), the pattern used by the team's production apps. `assets/images/` and `assets/icons/` are created and declared in `pubspec.yaml`, and `flutter_svg` is added.
+- A test in every generated app fails on a raw `'assets/...'` string outside the resolver, or a resolver path with no file.
+- A `flutter-assets` project skill, an asset rule in `AGENTS.md` and the Cursor/Windsurf rules, an asset check in the architecture review, and an asset-export step in the Figma-to-Flutter skill.
+- Docs pages for navigation and for images and icons.
+
 ## [1.0.0] - 2026-10-15
 
 First public release.

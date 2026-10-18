@@ -1,6 +1,6 @@
 ---
 name: flutter-architecture-review
-description: Reviews a diff or set of files in {{app_name}} against its architecture, state-management, error-handling, theming, navigation, l10n and network rules. Use after generating or changing feature code and before calling it done, or when asked to review a branch, PR or file for architecture or convention problems.
+description: Reviews a diff or set of files in {{app_name}} against its architecture, state-management, error-handling, theming, asset, navigation, l10n and network rules. Use after generating or changing feature code and before calling it done, or when asked to review a branch, PR or file for architecture or convention problems.
 ---
 
 # Architecture review
@@ -18,8 +18,11 @@ areas the diff touches, then check each changed file:
 3. **State**: {{review_state_check}}
 4. **Theming**: any `Color(0x...)`, `Colors.*`, bare padding/size numbers
    or inline `TextStyle` that should be a token?
-5. **Navigation**: any `Navigator.*`, raw path string, or required data
-   passed through `extra`?
+5. **Navigation and assets**: does navigation break the
+   `flutter-navigation` rules (raw path string, ad-hoc route built in a
+   widget, required data that a deep link would lose)? Any `'assets/...'`
+   string, `Image.asset` or `SvgPicture.asset` outside
+   `lib/core/asset_resolver/` instead of an `ImageResourceResolver` entry?
 6. **Network**: any {{network_packages}} import outside
    `lib/core/network/`? Any model decoded without an
    `addParser` registration?
